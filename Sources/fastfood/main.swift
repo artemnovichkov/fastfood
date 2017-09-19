@@ -1,43 +1,27 @@
 import Foundation
 import Files
 
-func load() {
-    let session = URLSession(configuration: .default)
-    let url = URL(string: "https://github.com/artemnovichkov/fastfile-test/archive/1.0.zip")!
-    let semaphore = DispatchSemaphore(value: 0)
-    let task = session.dataTask(with: url) { data, response, error in
-        guard let data = data else {
-            return
-        }
-        let file = try? FileSystem().createFile(at: "/usr/local/bin/.fastfood/fastfile-test.zip", contents: data)
-        unzip()
-        
-        let fastfile = try? File(path: "/usr/local/bin/.fastfood/fastfile-test-1.0/Fastfile")
-        let fastfoodFolder = try? Folder(path: "/usr/local/bin/.fastfood/")
-        try? fastfile?.move(to: fastfoodFolder!)
-        semaphore.signal()
-    }
-    task.resume()
-    semaphore.wait()
+func load(path: String, tag: String) throws -> Data {
+    let url = URL(string: path + "/archive/" + tag + ".zip")!
+    return try Data(contentsOf: url)
 }
 
-func unzip() {
+func unzip(input: String, output: String) {
     let process = Process()
     process.launchPath = "/usr/bin/env"
-    process.arguments = ["unzip", "/usr/local/bin/.fastfood/fastfile-test", "-d", "/usr/local/bin/.fastfood/"]
+    process.arguments = ["unzip", input, "-d", output]
     process.launch()
     process.waitUntilExit()
 }
 
-func updateFastfile() {
+func updateFastfileIfNeeded(withImport import: String) {
     do {
         let fastlaneFolder = try FileSystem().currentFolder.createSubfolderIfNeeded(withName: "fastlane")
         let fastfile = try fastlaneFolder.createFileIfNeeded(withName: "Fastfile")
         let fastfileContent = try fastfile.readAsString()
         var fastfileStrings = fastfileContent.components(separatedBy: "\n")
-        let neededImport = "import ~/.fastfood/Fastfile"
-        if !fastfileStrings.contains(neededImport) {
-            fastfileStrings.insert(neededImport, at: 0)
+        if !fastfileStrings.contains(`import`) {
+            fastfileStrings.insert(`import`, at: 0)
         }
         try fastfile.write(string: fastfileStrings.joined(separator: "\n"))
     }
@@ -46,11 +30,25 @@ func updateFastfile() {
     }
 }
 
-//Main logic
-let fastfoodFolder = try FileSystem().createFolderIfNeeded(at: "/usr/local/bin/.fastfood")
-if !fastfoodFolder.containsFile(named: "Fastfile") {
-    load()
+func save(data: Data, to folder: Folder) throws {
+    try FileSystem().createFile(at: folder.path + "fastfile-test.zip", contents: data)
+    unzip(input: "/usr/local/bin/.fastfood/fastfile-test", output: "/usr/local/bin/.fastfood/")
+    let fastfile = try? File(path: folder.path + "fastfile-test-1.0/Fastfile")
+    try fastfile?.move(to: folder)
 }
-updateFastfile()
-print("Finish")
+
+//Main logic
+do {
+    let fastfoodFolder = try FileSystem().createFolderIfNeeded(at: "/usr/local/bin/.fastfood")
+    
+    if !fastfoodFolder.containsFile(named: "Fastfile") {
+        let data = try load(path: "https://github.com/artemnovichkov/fastfile-test", tag: "1.0")
+        try save(data: data, to: fastfoodFolder)
+    }
+    updateFastfileIfNeeded(withImport: "import /usr/local/bin/.fastfood/Fastfile")
+    print("Finish")
+}
+catch {
+    print(error)
+}
 
