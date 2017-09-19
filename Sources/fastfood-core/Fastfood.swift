@@ -10,14 +10,16 @@ import Foundation
 public final class Fastfood {
     
     enum Error: Swift.Error {
+        case missingArguments
         case fastfileUpdatingFailed
     }
     
-    enum Keys {
+    private enum Keys {
         static let fastfoodPath = "/usr/local/bin/.fastfood"
+        static let fastfile = "Fastfile"
     }
     
-    private let arguments: [String]
+    private var arguments: [String]
     private let fileSystem: FileSystem
     
     public init(arguments: [String] = CommandLine.arguments, fileSystem: FileSystem = .init()) {
@@ -26,13 +28,22 @@ public final class Fastfood {
     }
     
     public func run() throws {
+        arguments.remove(at: 0)
+        guard arguments.count == 2 else {
+            throw Error.missingArguments
+        }
+        let path = arguments[0]
+        let tag = arguments[1]
         let fastfoodFolder = try fileSystem.createFolderIfNeeded(at: Keys.fastfoodPath)
         
-        if !fastfoodFolder.containsFile(named: "Fastfile") {
-            let data = try load(path: "https://github.com/artemnovichkov/fastfile-test", tag: "1.0")
-            try save(data: data, to: fastfoodFolder)
+        if !fastfoodFolder.containsFile(named: Keys.fastfile) {
+            print("Start downloding from \(path)...")
+            let data = try load(path: path, tag: tag)
+            print("Downloding has finished")
+            try save(data: data, withName: "fastfile-test", to: fastfoodFolder)
         }
-        try updateFastfileIfNeeded(withImport: "import \(Keys.fastfoodPath)/Fastfile")
+        try updateFastfileIfNeeded(withImport: "import \(Keys.fastfoodPath)/" + Keys.fastfile)
+        print("🚀 Done!")
     }
     
     private func load(path: String, tag: String) throws -> Data {
@@ -40,11 +51,11 @@ public final class Fastfood {
         return try Data(contentsOf: url)
     }
     
-    private func save(data: Data, to folder: Folder) throws {
-        try fileSystem.createFile(at: folder.path + "fastfile-test.zip", contents: data)
-        unzip(input: Keys.fastfoodPath + "/fastfile-test", output: Keys.fastfoodPath)
-        let fastfile = try? File(path: folder.path + "fastfile-test-1.0/Fastfile")
-        try fastfile?.move(to: folder)
+    private func save(data: Data, withName name: String, to folder: Folder) throws {
+        try fileSystem.createFile(at: folder.path + name + ".zip", contents: data)
+        unzip(input: Keys.fastfoodPath + "/" + name, output: Keys.fastfoodPath)
+        let fastfile = try File(path: folder.path + name + "-1.0/" + Keys.fastfile)
+        try fastfile.move(to: folder)
     }
     
     private func unzip(input: String, output: String) {
