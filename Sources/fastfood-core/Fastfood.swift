@@ -29,11 +29,11 @@ public final class Fastfood {
     
     public func run() throws {
         arguments.remove(at: 0)
-        guard arguments.count == 2 else {
+        guard arguments.count == 1 else {
             throw Error.missingArguments
         }
         let path = arguments[0]
-        let tag = arguments[1]
+        let tag = "1.0"
         let fastfoodFolder = try fileSystem.createFolderIfNeeded(at: Keys.fastfoodPath)
         
         if !fastfoodFolder.containsFile(named: Keys.fastfile) {
@@ -67,10 +67,11 @@ public final class Fastfood {
         process.waitUntilExit()
     }
     
-    private func updateFastfileIfNeeded(withImport import: String, tag: String) throws {
+    @discardableResult
+    private func updateFastfileIfNeeded(withImport import: String, tag: String) throws -> File {
         do {
             let fastlaneFolder = try fileSystem.currentFolder.createSubfolderIfNeeded(withName: "fastlane")
-            let fastfile = try fastlaneFolder.createFileIfNeeded(withName: "Fastfile")
+            let fastfile = try fastlaneFolder.createFileIfNeeded(withName: Keys.fastfile)
             let fastfileContent = try fastfile.readAsString()
             var fastfileStrings = fastfileContent.components(separatedBy: "\n")
             if let firstString = fastfileStrings.first, firstString.starts(with: "#") {
@@ -83,6 +84,7 @@ public final class Fastfood {
                 fastfileStrings.insert(`import`, at: 1)
             }
             try fastfile.write(string: fastfileStrings.joined(separator: "\n"))
+            return fastfile
         }
         catch {
             throw Error.fastfileUpdatingFailed
