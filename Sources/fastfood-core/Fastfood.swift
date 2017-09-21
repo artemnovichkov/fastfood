@@ -33,7 +33,7 @@ public final class Fastfood {
             throw Error.missingArguments
         }
         let path = arguments[0]
-        let tag = "1.0"
+        let tag = try currentTag() ?? "1.0"
         let fastfoodFolder = try fileSystem.createFolderIfNeeded(at: Keys.fastfoodPath)
         
         if !fastfoodFolder.containsFile(named: Keys.fastfile) {
@@ -70,8 +70,7 @@ public final class Fastfood {
     @discardableResult
     private func updateFastfileIfNeeded(withImport import: String, tag: String) throws -> File {
         do {
-            let fastlaneFolder = try fileSystem.currentFolder.createSubfolderIfNeeded(withName: "fastlane")
-            let fastfile = try fastlaneFolder.createFileIfNeeded(withName: Keys.fastfile)
+            let fastfile = try self.fastfile()
             let fastfileContent = try fastfile.readAsString()
             var fastfileStrings = fastfileContent.components(separatedBy: "\n")
             if let firstString = fastfileStrings.first, firstString.starts(with: "#") {
@@ -98,5 +97,20 @@ public final class Fastfood {
             }
         }
         try folder.subfolders.forEach { try $0.delete() }
+    }
+    
+    private func fastfile() throws -> File {
+        let fastlaneFolder = try fileSystem.currentFolder.createSubfolderIfNeeded(withName: "fastlane")
+        return try fastlaneFolder.createFileIfNeeded(withName: Keys.fastfile)
+    }
+    
+    private func currentTag() throws -> String? {
+        let fastfile = try self.fastfile()
+        let fastfileContent = try fastfile.readAsString()
+        let fastfileStrings = fastfileContent.components(separatedBy: "\n")
+        if let firstString = fastfileStrings.first, firstString.starts(with: "#") {
+            return firstString.replacingOccurrences(of: "#", with: "")
+        }
+        return nil
     }
 }
