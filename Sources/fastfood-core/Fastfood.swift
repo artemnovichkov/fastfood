@@ -37,12 +37,13 @@ public final class Fastfood {
         let fastfoodFolder = try fileSystem.createFolderIfNeeded(at: Keys.fastfoodPath)
         
         if !fastfoodFolder.containsFile(named: Keys.fastfile) {
-            print("Start downloding from \(path)...")
+            print("Start downloading from \(path)...")
             let data = try load(path: path, tag: tag)
-            print("Downloding has finished")
-            try save(data: data, withName: "fastfile-test", to: fastfoodFolder)
+            print("Downloading has finished")
+            try save(data: data, withName: "fastfile-test-\(tag)/", to: fastfoodFolder)
         }
         try updateFastfileIfNeeded(withImport: "import \(Keys.fastfoodPath)/" + Keys.fastfile)
+        try cleanup(fastfoodFolder)
         print("🚀 Done!")
     }
     
@@ -54,7 +55,7 @@ public final class Fastfood {
     private func save(data: Data, withName name: String, to folder: Folder) throws {
         try fileSystem.createFile(at: folder.path + name + ".zip", contents: data)
         unzip(input: Keys.fastfoodPath + "/" + name, output: Keys.fastfoodPath)
-        let fastfile = try File(path: folder.path + name + "-1.0/" + Keys.fastfile)
+        let fastfile = try File(path: folder.path + name + Keys.fastfile)
         try fastfile.move(to: folder)
     }
     
@@ -80,5 +81,14 @@ public final class Fastfood {
         catch {
             throw Error.fastfileUpdatingFailed
         }
+    }
+    
+    private func cleanup(_ folder: Folder) throws {
+        for file in folder.makeFileSequence() {
+            if file.name != Keys.fastfile {
+                try file.delete()
+            }
+        }
+        try folder.subfolders.forEach { try $0.delete() }
     }
 }
