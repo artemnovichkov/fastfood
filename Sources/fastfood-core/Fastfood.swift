@@ -42,7 +42,7 @@ public final class Fastfood {
             print("Downloading has finished")
             try save(data: data, withName: "fastfile-test-\(tag)/", to: fastfoodFolder)
         }
-        try updateFastfileIfNeeded(withImport: "import \(Keys.fastfoodPath)/" + Keys.fastfile)
+        try updateFastfileIfNeeded(withImport: "import \(Keys.fastfoodPath)/" + Keys.fastfile, tag: tag)
         try cleanup(fastfoodFolder)
         print("🚀 Done!")
     }
@@ -67,14 +67,20 @@ public final class Fastfood {
         process.waitUntilExit()
     }
     
-    private func updateFastfileIfNeeded(withImport import: String) throws {
+    private func updateFastfileIfNeeded(withImport import: String, tag: String) throws {
         do {
             let fastlaneFolder = try fileSystem.currentFolder.createSubfolderIfNeeded(withName: "fastlane")
             let fastfile = try fastlaneFolder.createFileIfNeeded(withName: "Fastfile")
             let fastfileContent = try fastfile.readAsString()
             var fastfileStrings = fastfileContent.components(separatedBy: "\n")
+            if let firstString = fastfileStrings.first, firstString.starts(with: "#") {
+                fastfileStrings[0] = "#" + tag
+            }
+            else {
+                fastfileStrings.insert("#" + tag, at: 0)
+            }
             if !fastfileStrings.contains(`import`) {
-                fastfileStrings.insert(`import`, at: 0)
+                fastfileStrings.insert(`import`, at: 1)
             }
             try fastfile.write(string: fastfileStrings.joined(separator: "\n"))
         }
