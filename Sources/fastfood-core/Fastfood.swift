@@ -34,7 +34,7 @@ public final class Fastfood {
         //        }
         //        let path = arguments[0]
         
-        //        let fastfile = try updateLocalFastfile()
+                let fastfile = try updateLocalFastfile()
         //        let fastfileStrings = try fastfile.readAsString().components(separatedBy: "\n")
         //        guard let firstString = fastfileStrings.first, firstString.starts(with: "#") else {
         //            //TODO: update error
@@ -45,10 +45,16 @@ public final class Fastfood {
         //        print(tag)
         
         //        try updateFastfileIfNeeded(withString: "import \(fastfile.path)", tag: "tag")
-        //        print("🚀 Done!")
-        
-        let tags = try self.tags().map(Tag.init)
-        print(tags)
+                print("🚀 Done!")
+    }
+    
+    func checkout(path: String, tag: String) {
+        let process = Process()
+        process.currentDirectoryPath = path
+        process.launchPath = "/usr/bin/env"
+        process.arguments = ["git", "checkout", "tags/" + tag]
+        process.launch()
+        process.waitUntilExit()
     }
     
     @discardableResult
@@ -56,12 +62,19 @@ public final class Fastfood {
         let fastfoodPath = "/usr/local/bin/.fastfood"
         let tempPath = fastfoodPath + "/tmp"
         try? Folder(path: tempPath).delete()
+        let tags = try self.tags().map(Tag.init)
+        guard let lastTag = tags.last else {
+            //TODO: add correct error
+            throw Error.fastfileUpdatingFailed
+        }
         clone(fromPath: "https://github.com/artemnovichkov/fastfile-test.git",
               toLocalPath: tempPath)
+        checkout(path: tempPath, tag: lastTag.version)
         let fastfoodFolder = try Folder(path: fastfoodPath)
         let fastfile = try File(path: tempPath + "/Fastfile")
         try? fastfoodFolder.file(named: "Fastfile").delete()
-        try fastfile.move(to: fastfoodFolder)
+        let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: "Fastfile-\(lastTag.version)")
+        try fastfile.move(to: subfolder)
         try? Folder(path: tempPath).delete()
         return fastfile
     }
