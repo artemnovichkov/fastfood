@@ -33,22 +33,23 @@ public final class Fastfood {
 //            throw Error.missingArguments
 //        }
 //        let path = arguments[0]
-//        let tag = try currentTag() ?? "1.0"
-//        let fastfoodFolder = try fileSystem.createFolderIfNeeded(at: Keys.fastfoodPath)
-//
-//        if !fastfoodFolder.containsFile(named: Keys.fastfile) {
-//            print("Start downloading from \(path)...")
-//            let data = try load(path: path, tag: tag)
-//            print("Downloading has finished")
-//            try save(data: data, withName: "fastfile-test-\(tag)/", to: fastfoodFolder)
-//        }
-//        try updateFastfileIfNeeded(withImport: "import \(Keys.fastfoodPath)/" + Keys.fastfile, tag: tag)
-//        try cleanup(fastfoodFolder)
+
+        let fastfile = try updateLocalFastfile()
+        let fastfileStrings = try fastfile.readAsString().components(separatedBy: "\n")
+        guard let firstString = fastfileStrings.first, firstString.starts(with: "#") else {
+            //TODO: update error
+            throw Error.fastfileUpdatingFailed
+        }
+        let tagIndex = firstString.index(after: firstString.startIndex)
+        let tag = firstString[tagIndex...]
+        print(tag)
+        
+//        try updateFastfileIfNeeded(withString: "import \(fastfile.path)", tag: "tag")
 //        print("🚀 Done!")
-        try updateLocalFastfile()
     }
     
-    func updateLocalFastfile() throws {
+    @discardableResult
+    func updateLocalFastfile() throws -> File {
         let fastfoodPath = "/usr/local/bin/.fastfood"
         let tempPath = fastfoodPath + "/tmp"
         try? Folder(path: tempPath).delete()
@@ -59,6 +60,7 @@ public final class Fastfood {
         try? fastfoodFolder.file(named: "Fastfile").delete()
         try fastfile.move(to: fastfoodFolder)
         try? Folder(path: tempPath).delete()
+        return fastfile
     }
     
     private func load(path: String, tag: String) throws -> Data {
@@ -90,9 +92,9 @@ public final class Fastfood {
     }
     
     @discardableResult
-    private func updateFastfileIfNeeded(withImport import: String, tag: String) throws -> File {
+    private func updateFastfileIfNeeded(withString string: String, tag: String) throws -> File {
         do {
-            let fastfile = try self.fastfile()
+            let fastfile = try projectFastfile()
             let fastfileContent = try fastfile.readAsString()
             var fastfileStrings = fastfileContent.components(separatedBy: "\n")
             if let firstString = fastfileStrings.first, firstString.starts(with: "#") {
@@ -101,8 +103,8 @@ public final class Fastfood {
             else {
                 fastfileStrings.insert("#" + tag, at: 0)
             }
-            if !fastfileStrings.contains(`import`) {
-                fastfileStrings.insert(`import`, at: 1)
+            if !fastfileStrings.contains(string) {
+                fastfileStrings.insert(string, at: 1)
             }
             try fastfile.write(string: fastfileStrings.joined(separator: "\n"))
             return fastfile
@@ -112,27 +114,8 @@ public final class Fastfood {
         }
     }
     
-    private func cleanup(_ folder: Folder) throws {
-        for file in folder.makeFileSequence() {
-            if file.name != Keys.fastfile {
-                try file.delete()
-            }
-        }
-        try folder.subfolders.forEach { try $0.delete() }
-    }
-    
-    private func fastfile() throws -> File {
+    private func projectFastfile() throws -> File {
         let fastlaneFolder = try fileSystem.currentFolder.createSubfolderIfNeeded(withName: "fastlane")
         return try fastlaneFolder.createFileIfNeeded(withName: Keys.fastfile)
-    }
-    
-    private func currentTag() throws -> String? {
-        let fastfile = try self.fastfile()
-        let fastfileContent = try fastfile.readAsString()
-        let fastfileStrings = fastfileContent.components(separatedBy: "\n")
-        if let firstString = fastfileStrings.first, firstString.starts(with: "#") {
-            return firstString.replacingOccurrences(of: "#", with: "")
-        }
-        return nil
     }
 }
