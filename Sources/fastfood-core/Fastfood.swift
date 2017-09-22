@@ -83,10 +83,14 @@ public final class Fastfood {
             let fastfile = try projectFastfile()
             let fastfileContent = try fastfile.readAsString()
             var fastfileStrings = fastfileContent.components(separatedBy: "\n")
-            if !fastfileStrings.contains(string) {
-                fastfileStrings.insert(string, at: 0)
-                try fastfile.write(string: fastfileStrings.joined(separator: "\n"))
+            let index = fastfileStrings.index { $0.contains(Keys.fastfoodPath) }
+            if let index = index {
+                fastfileStrings[index] = string
             }
+            else {
+                fastfileStrings.insert(string, at: 0)
+            }
+            try fastfile.write(string: fastfileStrings.joined(separator: "\n"))
             return fastfile
         }
         catch {
