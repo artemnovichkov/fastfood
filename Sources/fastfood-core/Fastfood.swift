@@ -10,7 +10,7 @@ import Foundation
 public final class Fastfood {
     
     enum Error: Swift.Error {
-        case missingArguments
+        case noURL
         case noTags
         case fastfileUpdatingFailed
     }
@@ -33,19 +33,19 @@ public final class Fastfood {
     }
     
     public func run() throws {
-        arguments.remove(at: 0)
-        guard arguments.count == 1 else {
-            throw Error.missingArguments
-        }
-        let path = arguments[0]
+        let arguments = try Arguments(arguments: self.arguments)
         
-        let fastfile = try updateLocalFastfile(fromPath: path)
+        guard let url = arguments.url else {
+            throw Error.noURL
+        }
+        
+        let fastfile = try updateLocalFastfile(fromPath: url, tag: arguments.tag)
         try updateFastfileIfNeeded(withString: "import \(fastfile.path)")
         print("🚀 Done!")
     }
     
     @discardableResult
-    private func updateLocalFastfile(fromPath path: String) throws -> File {
+    private func updateLocalFastfile(fromPath path: String, tag: String?) throws -> File {
         let tempPath = Keys.fastfoodPath + "/tmp"
         
         func deleteTemp() {
@@ -55,16 +55,23 @@ public final class Fastfood {
         deleteTemp()
         
         let tags = try gitService.tags(from: path).map(Tag.init)
-        guard let lastTag = tags.last else {
+        let selectedTag: String?
+        if let tag = tag {
+            selectedTag = tags.first { $0.version == tag }?.version
+        }
+        else {
+            selectedTag = tags.last?.version
+        }
+        guard let tag = selectedTag else {
             throw Error.noTags
         }
-        let taggedFastfileName = Keys.fastfile + "-\(lastTag.version)"
+        let taggedFastfileName = Keys.fastfile + "-\(tag)"
         let fastfoodFolder = try Folder(path: Keys.fastfoodPath)
         if let file = try? File(path: fastfoodFolder.path + taggedFastfileName + "/" + Keys.fastfile) {
             return file
         }
         gitService.clone(fromPath: path, toLocalPath: tempPath)
-        gitService.checkout(path: tempPath, tag: lastTag.version)
+        gitService.checkout(path: tempPath, tag: tag)
         let fastfile = try File(path: tempPath + "/" + Keys.fastfile)
         try? fastfoodFolder.file(named: Keys.fastfile).delete()
         let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: taggedFastfileName)
