@@ -22,11 +22,11 @@ public class GitService {
     }
     
     func clone(fromPath path: String, toLocalPath localPath: String) {
-        process(arguments: ["git", "clone", path, localPath])
+        process(arguments: ["git", "clone", path, localPath, "--quiet"])
     }
     
     func checkout(path: String, tag: String) {
-        process(launchPath: path, arguments: ["git", "checkout", "tags/" + tag])
+        process(launchPath: path, arguments: ["git", "checkout", "tags/" + tag, "--quiet"])
     }
     
     @discardableResult
