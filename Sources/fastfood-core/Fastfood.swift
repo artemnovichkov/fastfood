@@ -28,15 +28,15 @@ public final class Fastfood {
     }
     
     public func run() throws {
-        //        arguments.remove(at: 0)
-        //        guard arguments.count == 1 else {
-        //            throw Error.missingArguments
-        //        }
-        //        let path = arguments[0]
+        arguments.remove(at: 0)
+        guard arguments.count == 1 else {
+            throw Error.missingArguments
+        }
+        let path = arguments[0]
         
-                let fastfile = try updateLocalFastfile()
-                try updateFastfileIfNeeded(withString: "import \(fastfile.path)", tag: "tag")
-                print("🚀 Done!")
+        let fastfile = try updateLocalFastfile(fromPath: path)
+        try updateFastfileIfNeeded(withString: "import \(fastfile.path)")
+        print("🚀 Done!")
     }
     
     private func tags(from path: String) -> [String] {
@@ -60,21 +60,20 @@ public final class Fastfood {
     }
     
     @discardableResult
-    private func updateLocalFastfile() throws -> File {
-        let repoPath = "https://github.com/artemnovichkov/fastfile-test.git"
+    private func updateLocalFastfile(fromPath path: String) throws -> File {
         let tempPath = Keys.fastfoodPath + "/tmp"
         try? Folder(path: tempPath).delete()
-        let tags = try self.tags(from: repoPath).map(Tag.init)
+        let tags = try self.tags(from: path).map(Tag.init)
         guard let lastTag = tags.last else {
             //TODO: add correct error
             throw Error.fastfileUpdatingFailed
         }
         let taggedFastfileName = "Fastfile-\(lastTag.version)"
         let fastfoodFolder = try Folder(path: Keys.fastfoodPath)
-        if let file = try? File(path: fastfoodFolder.path + "/" + taggedFastfileName) {
+        if let file = try? File(path: fastfoodFolder.path + taggedFastfileName + "/Fastfile") {
             return file
         }
-        clone(fromPath: repoPath, toLocalPath: tempPath)
+        clone(fromPath: path, toLocalPath: tempPath)
         checkout(path: tempPath, tag: lastTag.version)
         let fastfile = try File(path: tempPath + "/Fastfile")
         try? fastfoodFolder.file(named: "Fastfile").delete()
@@ -102,7 +101,7 @@ public final class Fastfood {
     }
     
     @discardableResult
-    private func updateFastfileIfNeeded(withString string: String, tag: String) throws -> File {
+    private func updateFastfileIfNeeded(withString string: String) throws -> File {
         do {
             let fastfile = try projectFastfile()
             let fastfileContent = try fastfile.readAsString()
