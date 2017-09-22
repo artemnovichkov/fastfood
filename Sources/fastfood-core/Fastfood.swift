@@ -40,14 +40,14 @@ public final class Fastfood {
             throw Error.noURL
         }
         
-        let fastfile = try updateLocalFastfile(fromPath: url.absoluteString, tag: arguments.tag)
+        let fastfile = try updateSharedFastfileIfNeeded(fromPath: url.absoluteString, tag: arguments.tag)
         print("🤖 Updating...")
-        try updateFastfileIfNeeded(withString: "import \(fastfile.path)")
+        try updateProjectFastfileIfNeeded(withString: "import \(fastfile.path)")
         print("🎉 Done!")
     }
     
     @discardableResult
-    private func updateLocalFastfile(fromPath path: String, tag: String?) throws -> File {
+    private func updateSharedFastfileIfNeeded(fromPath path: String, tag: String?) throws -> File {
         let tags = try gitService.tags(from: path).map(Tag.init)
         let selectedTag: String?
         if let tag = tag {
@@ -78,7 +78,7 @@ public final class Fastfood {
     }
     
     @discardableResult
-    private func updateFastfileIfNeeded(withString string: String) throws -> File {
+    private func updateProjectFastfileIfNeeded(withString string: String) throws -> File {
         do {
             let fastfile = try projectFastfile()
             let fastfileContent = try fastfile.readAsString()
