@@ -68,15 +68,15 @@ public final class Fastfood {
             //TODO: add correct error
             throw Error.fastfileUpdatingFailed
         }
-        let taggedFastfileName = "Fastfile-\(lastTag.version)"
+        let taggedFastfileName = Keys.fastfile + "-\(lastTag.version)"
         let fastfoodFolder = try Folder(path: Keys.fastfoodPath)
-        if let file = try? File(path: fastfoodFolder.path + taggedFastfileName + "/Fastfile") {
+        if let file = try? File(path: fastfoodFolder.path + taggedFastfileName + "/" + Keys.fastfile) {
             return file
         }
         clone(fromPath: path, toLocalPath: tempPath)
         checkout(path: tempPath, tag: lastTag.version)
-        let fastfile = try File(path: tempPath + "/Fastfile")
-        try? fastfoodFolder.file(named: "Fastfile").delete()
+        let fastfile = try File(path: tempPath + "/" + Keys.fastfile)
+        try? fastfoodFolder.file(named: Keys.fastfile).delete()
         let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: taggedFastfileName)
         try fastfile.move(to: subfolder)
         try? Folder(path: tempPath).delete()
@@ -108,8 +108,8 @@ public final class Fastfood {
             var fastfileStrings = fastfileContent.components(separatedBy: "\n")
             if !fastfileStrings.contains(string) {
                 fastfileStrings.insert(string, at: 0)
+                try fastfile.write(string: fastfileStrings.joined(separator: "\n"))
             }
-            try fastfile.write(string: fastfileStrings.joined(separator: "\n"))
             return fastfile
         }
         catch {
