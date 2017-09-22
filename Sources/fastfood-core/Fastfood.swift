@@ -47,7 +47,7 @@ public final class Fastfood {
     
     @discardableResult
     private func updateLocalFastfile(fromPath path: String, tag: String?) throws -> File {
-        let tempPath = [Keys.fastfoodPath, "tmp"].joined(separator: "/")
+        let tempPath = [Keys.fastfoodPath, "tmp"].joinedPath()
         
         func deleteTemp() {
             try? Folder(path: tempPath).delete()
@@ -68,12 +68,12 @@ public final class Fastfood {
         }
         let taggedFastfileName = [Keys.fastfile, tag].joined(separator: "-")
         let fastfoodFolder = try Folder(path: Keys.fastfoodPath)
-        if let file = try? File(path: fastfoodFolder.path + taggedFastfileName + "/" + Keys.fastfile) {
+        if let file = try? File(path: [fastfoodFolder.path + taggedFastfileName, Keys.fastfile].joinedPath()) {
             return file
         }
         gitService.clone(fromPath: path, toLocalPath: tempPath)
         gitService.checkout(path: tempPath, tag: tag)
-        let fastfile = try File(path: [tempPath, Keys.fastfile].joined(separator: "/"))
+        let fastfile = try File(path: [tempPath, Keys.fastfile].joinedPath())
         try? fastfoodFolder.file(named: Keys.fastfile).delete()
         let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: taggedFastfileName)
         try fastfile.move(to: subfolder)
@@ -101,5 +101,12 @@ public final class Fastfood {
     private func projectFastfile() throws -> File {
         let fastlaneFolder = try fileSystem.currentFolder.createSubfolderIfNeeded(withName: "fastlane")
         return try fastlaneFolder.createFileIfNeeded(withName: Keys.fastfile)
+    }
+}
+
+extension Array where Element == String {
+    
+    func joinedPath() -> Element {
+        return joined(separator: "/")
     }
 }
