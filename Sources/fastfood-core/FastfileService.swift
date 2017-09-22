@@ -57,9 +57,6 @@ public final class FastfileService {
         gitService.clone(fromPath: path, toLocalPath: fastfilesPath)
         gitService.checkout(path: fastfilesPath, tag: tag)
         let fastfile = try File(path: [fastfilesPath, Keys.fastfile].joinedPath())
-        try? fastfoodFolder.file(named: Keys.fastfile).delete()
-        let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: taggedFastfileName)
-        try fastfile.move(to: subfolder)
         return fastfile.path
     }
     
