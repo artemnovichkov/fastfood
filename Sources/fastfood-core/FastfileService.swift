@@ -33,7 +33,7 @@ public final class FastfileService {
     /// - Returns: A shared file with needed content.
     /// - Throws: In case of wrong of no any tags and `Files` framework errors.
     @discardableResult
-    func updateSharedFastfileIfNeeded(fromPath path: String, tag: String?) throws -> File {
+    func updateSharedFastfileIfNeeded(fromPath path: String, tag: String?) throws -> String {
         let tags = try gitService.tags(from: path).map(Tag.init)
         let selectedTag: String?
         if let tag = tag {
@@ -51,7 +51,7 @@ public final class FastfileService {
         let fastfilesPath = fastfoodFolder.path + taggedFastfileName
         
         if let file = try? File(path: [fastfoodFolder.path + taggedFastfileName, Keys.fastfile].joinedPath()) {
-            return file
+            return file.path
         }
         print("🦄 Clone \(path)...")
         gitService.clone(fromPath: path, toLocalPath: fastfilesPath)
@@ -60,16 +60,14 @@ public final class FastfileService {
         try? fastfoodFolder.file(named: Keys.fastfile).delete()
         let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: taggedFastfileName)
         try fastfile.move(to: subfolder)
-        return fastfile
+        return fastfile.path
     }
     
     /// Updates local `Fastfile` in current project directory. Creates a new one if needed.
     ///
     /// - Parameter string: A string for adding.
-    /// - Returns: A project file with needed content.
     /// - Throws: I case of reading or updating errors.
-    @discardableResult
-    func updateProjectFastfileIfNeeded(withString string: String) throws -> File {
+    func updateProjectFastfileIfNeeded(withString string: String) throws {
         do {
             let fastfile = try projectFastfile()
             let fastfileContent = try fastfile.readAsString()
@@ -82,7 +80,6 @@ public final class FastfileService {
                 fastfileStrings.insert(string, at: 0)
             }
             try fastfile.write(string: fastfileStrings.joined(separator: "\n"))
-            return fastfile
         }
         catch {
             throw Error.fastfileUpdatingFailed

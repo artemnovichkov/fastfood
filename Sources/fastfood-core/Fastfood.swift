@@ -3,7 +3,6 @@
 //
 
 import Foundation
-import Files
 
 public final class Fastfood {
     
@@ -28,9 +27,9 @@ public final class Fastfood {
             throw Error.noURL
         }
         
-        let fastfile = try fastfileService.updateSharedFastfileIfNeeded(fromPath: url.absoluteString, tag: arguments.tag)
+        let path = try fastfileService.updateSharedFastfileIfNeeded(fromPath: url.absoluteString, tag: arguments.tag)
         print("🤖 Updating...")
-        try fastfileService.updateProjectFastfileIfNeeded(withString: "import \(fastfile.path)")
+        try fastfileService.updateProjectFastfileIfNeeded(withString: "import \(path)")
         print("🎉 Done!")
     }
 }
