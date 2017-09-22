@@ -41,8 +41,9 @@ public final class Fastfood {
         }
         
         let fastfile = try updateLocalFastfile(fromPath: url.absoluteString, tag: arguments.tag)
+        print("🤖 Updating...")
         try updateFastfileIfNeeded(withString: "import \(fastfile.path)")
-        print("🚀 Done!")
+        print("🎉 Done!")
     }
     
     @discardableResult
@@ -71,6 +72,7 @@ public final class Fastfood {
         if let file = try? File(path: [fastfoodFolder.path + taggedFastfileName, Keys.fastfile].joinedPath()) {
             return file
         }
+        print("🦄 Clone \(path)...")
         gitService.clone(fromPath: path, toLocalPath: tempPath)
         gitService.checkout(path: tempPath, tag: tag)
         let fastfile = try File(path: [tempPath, Keys.fastfile].joinedPath())
