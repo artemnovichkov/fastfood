@@ -110,3 +110,14 @@ extension Array where Element == String {
         return joined(separator: "/")
     }
 }
+
+extension Fastfood.Error: LocalizedError {
+    
+    var errorDescription: String? {
+        switch self {
+        case .noURL: return "URL doesn't defined. Use --url parameter."
+        case .noTags: return "Tag can't be founded."
+        case .fastfileUpdatingFailed: return "Fastfile can't be founded or updated."
+        }
+    }
+}
