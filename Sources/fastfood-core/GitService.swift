@@ -4,7 +4,7 @@
 
 import Foundation
 
-public class GitService {
+public final class GitService {
     
     public init() {
         
@@ -28,6 +28,8 @@ public class GitService {
     func checkout(path: String, tag: String) {
         process(launchPath: path, arguments: ["git", "checkout", "tags/" + tag, "--quiet"])
     }
+    
+    // MARK: - Private
     
     @discardableResult
     private func process(launchPath: String? = nil, arguments: [String]) -> String? {
