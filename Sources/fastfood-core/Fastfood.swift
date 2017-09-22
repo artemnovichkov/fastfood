@@ -39,10 +39,10 @@ public final class Fastfood {
                 print("🚀 Done!")
     }
     
-    private func tags() -> [String] {
+    private func tags(from path: String) -> [String] {
         let process = Process()
         process.launchPath = "/usr/bin/env"
-        process.arguments = ["git", "ls-remote", "--refs", "-t", "https://github.com/artemnovichkov/fastfile-test.git"]
+        process.arguments = ["git", "ls-remote", "--refs", "-t", path]
         let outpipe = Pipe()
         process.standardOutput = outpipe
         process.launch()
@@ -61,18 +61,17 @@ public final class Fastfood {
     
     @discardableResult
     private func updateLocalFastfile() throws -> File {
-        let fastfoodPath = "/usr/local/bin/.fastfood"
-        let tempPath = fastfoodPath + "/tmp"
+        let repoPath = "https://github.com/artemnovichkov/fastfile-test.git"
+        let tempPath = Keys.fastfoodPath + "/tmp"
         try? Folder(path: tempPath).delete()
-        let tags = try self.tags().map(Tag.init)
+        let tags = try self.tags(from: repoPath).map(Tag.init)
         guard let lastTag = tags.last else {
             //TODO: add correct error
             throw Error.fastfileUpdatingFailed
         }
-        clone(fromPath: "https://github.com/artemnovichkov/fastfile-test.git",
-              toLocalPath: tempPath)
+        clone(fromPath: repoPath, toLocalPath: tempPath)
         checkout(path: tempPath, tag: lastTag.version)
-        let fastfoodFolder = try Folder(path: fastfoodPath)
+        let fastfoodFolder = try Folder(path: Keys.fastfoodPath)
         let fastfile = try File(path: tempPath + "/Fastfile")
         try? fastfoodFolder.file(named: "Fastfile").delete()
         let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: "Fastfile-\(lastTag.version)")
