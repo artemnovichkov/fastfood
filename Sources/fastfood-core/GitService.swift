@@ -11,42 +11,41 @@ public class GitService {
     }
     
     func tags(from path: String) -> [String] {
-        let process = self.process(arguments: ["git", "ls-remote", "--refs", "-t", path])
-        let outpipe = Pipe()
-        process.standardOutput = outpipe
-        process.launch()
-        
         var output = [String]()
         
-        let outdata = outpipe.fileHandleForReading.readDataToEndOfFile()
-        if var string = String(data: outdata, encoding: .utf8) {
+        if var string = process(arguments: ["git", "ls-remote", "--refs", "-t", path]) {
             string = string.trimmingCharacters(in: .newlines)
             output = string.components(separatedBy: "\n")
         }
         
-        process.waitUntilExit()
         return output
     }
     
     func clone(fromPath path: String, toLocalPath localPath: String) {
-        let process = self.process(arguments: ["git", "clone", path, localPath])
-        process.launch()
-        process.waitUntilExit()
+        process(arguments: ["git", "clone", path, localPath])
     }
     
     func checkout(path: String, tag: String) {
-        let process = self.process(launchPath: path, arguments: ["git", "checkout", "tags/" + tag])
-        process.launch()
-        process.waitUntilExit()
+        process(launchPath: path, arguments: ["git", "checkout", "tags/" + tag])
     }
     
-    private func process(launchPath: String? = nil, arguments: [String]) -> Process {
+    @discardableResult
+    private func process(launchPath: String? = nil, arguments: [String]) -> String? {
         let process = Process()
         if let launchPath = launchPath {
             process.currentDirectoryPath = launchPath
         }
         process.launchPath = "/usr/bin/env"
         process.arguments = arguments
-        return process
+        
+        let outpipe = Pipe()
+        process.standardOutput = outpipe
+        process.launch()
+        
+        let outdata = outpipe.fileHandleForReading.readDataToEndOfFile()
+        
+        process.waitUntilExit()
+        
+        return String(data: outdata, encoding: .utf8)
     }
 }
