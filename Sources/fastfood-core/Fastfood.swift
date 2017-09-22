@@ -48,14 +48,6 @@ public final class Fastfood {
     
     @discardableResult
     private func updateLocalFastfile(fromPath path: String, tag: String?) throws -> File {
-        let tempPath = [Keys.fastfoodPath, "tmp"].joinedPath()
-        
-        func deleteTemp() {
-            try? Folder(path: tempPath).delete()
-        }
-        
-        deleteTemp()
-        
         let tags = try gitService.tags(from: path).map(Tag.init)
         let selectedTag: String?
         if let tag = tag {
@@ -68,18 +60,20 @@ public final class Fastfood {
             throw Error.noTags
         }
         let taggedFastfileName = [Keys.fastfile, tag].joined(separator: "-")
+        
         let fastfoodFolder = try Folder(path: Keys.fastfoodPath)
+        let fastfilesPath = fastfoodFolder.path + taggedFastfileName
+        
         if let file = try? File(path: [fastfoodFolder.path + taggedFastfileName, Keys.fastfile].joinedPath()) {
             return file
         }
         print("🦄 Clone \(path)...")
-        gitService.clone(fromPath: path, toLocalPath: tempPath)
-        gitService.checkout(path: tempPath, tag: tag)
-        let fastfile = try File(path: [tempPath, Keys.fastfile].joinedPath())
+        gitService.clone(fromPath: path, toLocalPath: fastfilesPath)
+        gitService.checkout(path: fastfilesPath, tag: tag)
+        let fastfile = try File(path: [fastfilesPath, Keys.fastfile].joinedPath())
         try? fastfoodFolder.file(named: Keys.fastfile).delete()
         let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: taggedFastfileName)
         try fastfile.move(to: subfolder)
-        deleteTemp()
         return fastfile
     }
     
