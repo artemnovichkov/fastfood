@@ -9,7 +9,7 @@ struct Arguments {
     var url: URL?
     var tag: String?
     
-    init(arguments: [String]) throws {
+    init(arguments: [String]) {
         for (index, argument) in arguments.enumerated() {
             switch argument.lowercased() {
             case "-u", "--url":

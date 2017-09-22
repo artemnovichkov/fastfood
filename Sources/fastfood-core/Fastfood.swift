@@ -20,7 +20,7 @@ public final class Fastfood {
     }
     
     public func run() throws {
-        let arguments = try Arguments(arguments: self.arguments)
+        let arguments = Arguments(arguments: self.arguments)
         
         guard let url = arguments.url else {
             print(Arguments.description)
