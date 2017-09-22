@@ -10,6 +10,8 @@ public final class FastfileService {
     enum Error: Swift.Error {
         case noTags
         case fastfileUpdatingFailed
+        case fastfileReadingFailed
+        case fastfoodFolderReadingFailed
     }
     
     private enum Keys {
@@ -31,7 +33,7 @@ public final class FastfileService {
     ///   - path: A path for remote repository.
     ///   - tag: A tag for check.
     /// - Returns: A shared file with needed content.
-    /// - Throws: In case of wrong of no any tags and `Files` framework errors.
+    /// - Throws: `FastfileService.Error` errors.
     @discardableResult
     func updateSharedFastfileIfNeeded(fromPath path: String, tag: String?) throws -> String {
         let tags = try gitService.tags(from: path).map(Tag.init)
@@ -47,7 +49,14 @@ public final class FastfileService {
         }
         let taggedFastfileName = [Keys.fastfile, tag].joined(separator: "-")
         
-        let fastfoodFolder = try Folder(path: Keys.fastfoodPath)
+        let fastfoodFolder: Folder
+        do {
+            fastfoodFolder = try Folder(path: Keys.fastfoodPath)
+        }
+        catch {
+            throw Error.fastfoodFolderReadingFailed
+        }
+        
         let fastfilesPath = fastfoodFolder.path + taggedFastfileName
         
         if let file = try? File(path: [fastfoodFolder.path + taggedFastfileName, Keys.fastfile].joinedPath()) {
@@ -56,14 +65,19 @@ public final class FastfileService {
         print("🦄 Clone \(path)...")
         gitService.clone(fromPath: path, toLocalPath: fastfilesPath)
         gitService.checkout(path: fastfilesPath, tag: tag)
-        let fastfile = try File(path: [fastfilesPath, Keys.fastfile].joinedPath())
-        return fastfile.path
+        do {
+            let fastfile = try File(path: [fastfilesPath, Keys.fastfile].joinedPath())
+            return fastfile.path
+        }
+        catch {
+            throw Error.fastfileReadingFailed
+        }
     }
     
     /// Updates local `Fastfile` in current project directory. Creates a new one if needed.
     ///
     /// - Parameter string: A string for adding.
-    /// - Throws: I case of reading or updating errors.
+    /// - Throws: In case of reading or updating errors.
     func updateProjectFastfileIfNeeded(withString string: String) throws {
         do {
             let fastfile = try projectFastfile()
@@ -104,6 +118,8 @@ extension FastfileService.Error: LocalizedError {
         switch self {
         case .noTags: return "Tag can't be founded."
         case .fastfileUpdatingFailed: return "Fastfile can't be founded or updated."
+        case .fastfileReadingFailed: return "Remote repository doesn't contain Fastfile."
+        case .fastfoodFolderReadingFailed: return "Can't find fastfood folder."
         }
     }
 }
