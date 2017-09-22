@@ -36,10 +36,11 @@ public final class Fastfood {
         let arguments = try Arguments(arguments: self.arguments)
         
         guard let url = arguments.url else {
+            print(Arguments.description)
             throw Error.noURL
         }
         
-        let fastfile = try updateLocalFastfile(fromPath: url, tag: arguments.tag)
+        let fastfile = try updateLocalFastfile(fromPath: url.absoluteString, tag: arguments.tag)
         try updateFastfileIfNeeded(withString: "import \(fastfile.path)")
         print("🚀 Done!")
     }

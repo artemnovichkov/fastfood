@@ -6,18 +6,28 @@ import Foundation
 
 struct Arguments {
     
-    var url: String?
+    var url: URL?
     var tag: String?
     
     init(arguments: [String]) throws {
         for (index, argument) in arguments.enumerated() {
             switch argument.lowercased() {
-            case "--url", "-u":
-                url = arguments[index + 1]
-            case "--tag", "-t":
+            case "-u", "--url":
+                url = URL(string: arguments[index + 1])
+            case "-t", "--tag":
                 tag = arguments[index + 1]
             default: break
             }
         }
     }
+    
+    static let description: String = {
+        return """
+Usage: fastfood [options]
+  -u, --url:
+      URL to a repo contains Fastfile.
+  -t, --tag:
+      A version of Fastfile. Should be equals to any tag in Fastfile repo.
+"""
+    }()
 }
