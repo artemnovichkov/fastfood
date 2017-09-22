@@ -28,24 +28,27 @@ public final class Fastfood {
     }
     
     public func run() throws {
-//        arguments.remove(at: 0)
-//        guard arguments.count == 1 else {
-//            throw Error.missingArguments
-//        }
-//        let path = arguments[0]
-
-        let fastfile = try updateLocalFastfile()
-        let fastfileStrings = try fastfile.readAsString().components(separatedBy: "\n")
-        guard let firstString = fastfileStrings.first, firstString.starts(with: "#") else {
-            //TODO: update error
-            throw Error.fastfileUpdatingFailed
-        }
-        let tagIndex = firstString.index(after: firstString.startIndex)
-        let tag = firstString[tagIndex...]
-        print(tag)
+        //        arguments.remove(at: 0)
+        //        guard arguments.count == 1 else {
+        //            throw Error.missingArguments
+        //        }
+        //        let path = arguments[0]
         
-//        try updateFastfileIfNeeded(withString: "import \(fastfile.path)", tag: "tag")
-//        print("🚀 Done!")
+        //        let fastfile = try updateLocalFastfile()
+        //        let fastfileStrings = try fastfile.readAsString().components(separatedBy: "\n")
+        //        guard let firstString = fastfileStrings.first, firstString.starts(with: "#") else {
+        //            //TODO: update error
+        //            throw Error.fastfileUpdatingFailed
+        //        }
+        //        let tagIndex = firstString.index(after: firstString.startIndex)
+        //        let tag = firstString[tagIndex...]
+        //        print(tag)
+        
+        //        try updateFastfileIfNeeded(withString: "import \(fastfile.path)", tag: "tag")
+        //        print("🚀 Done!")
+        
+        let tags = try self.tags().map(Tag.init)
+        print(tags)
     }
     
     @discardableResult
@@ -89,6 +92,26 @@ public final class Fastfood {
         process.arguments = ["git", "clone", path, localPath]
         process.launch()
         process.waitUntilExit()
+    }
+    
+    func tags() -> [String] {
+        let process = Process()
+        process.launchPath = "/usr/bin/env"
+        process.arguments = ["git", "ls-remote", "--refs", "-t", "https://github.com/artemnovichkov/fastfile-test.git"]
+        let outpipe = Pipe()
+        process.standardOutput = outpipe
+        process.launch()
+        
+        var output = [String]()
+        
+        let outdata = outpipe.fileHandleForReading.readDataToEndOfFile()
+        if var string = String(data: outdata, encoding: .utf8) {
+            string = string.trimmingCharacters(in: .newlines)
+            output = string.components(separatedBy: "\n")
+        }
+        
+        process.waitUntilExit()
+        return output
     }
     
     @discardableResult
