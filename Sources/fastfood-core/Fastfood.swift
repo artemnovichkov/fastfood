@@ -22,10 +22,14 @@ public final class Fastfood {
     
     private var arguments: [String]
     private let fileSystem: FileSystem
+    private let gitService: GitService
     
-    public init(arguments: [String] = CommandLine.arguments, fileSystem: FileSystem = .init()) {
+    public init(arguments: [String] = CommandLine.arguments,
+                fileSystem: FileSystem = .init(),
+                gitService: GitService = .init()) {
         self.arguments = arguments
         self.fileSystem = fileSystem
+        self.gitService = gitService
     }
     
     public func run() throws {
@@ -50,7 +54,7 @@ public final class Fastfood {
         
         deleteTemp()
         
-        let tags = try self.tags(from: path).map(Tag.init)
+        let tags = try gitService.tags(from: path).map(Tag.init)
         guard let lastTag = tags.last else {
             throw Error.noTags
         }
@@ -59,51 +63,14 @@ public final class Fastfood {
         if let file = try? File(path: fastfoodFolder.path + taggedFastfileName + "/" + Keys.fastfile) {
             return file
         }
-        clone(fromPath: path, toLocalPath: tempPath)
-        checkout(path: tempPath, tag: lastTag.version)
+        gitService.clone(fromPath: path, toLocalPath: tempPath)
+        gitService.checkout(path: tempPath, tag: lastTag.version)
         let fastfile = try File(path: tempPath + "/" + Keys.fastfile)
         try? fastfoodFolder.file(named: Keys.fastfile).delete()
         let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: taggedFastfileName)
         try fastfile.move(to: subfolder)
         deleteTemp()
         return fastfile
-    }
-    
-    private func tags(from path: String) -> [String] {
-        let process = Process()
-        process.launchPath = "/usr/bin/env"
-        process.arguments = ["git", "ls-remote", "--refs", "-t", path]
-        let outpipe = Pipe()
-        process.standardOutput = outpipe
-        process.launch()
-        
-        var output = [String]()
-        
-        let outdata = outpipe.fileHandleForReading.readDataToEndOfFile()
-        if var string = String(data: outdata, encoding: .utf8) {
-            string = string.trimmingCharacters(in: .newlines)
-            output = string.components(separatedBy: "\n")
-        }
-        
-        process.waitUntilExit()
-        return output
-    }
-    
-    private func clone(fromPath path: String, toLocalPath localPath: String) {
-        let process = Process()
-        process.launchPath = "/usr/bin/env"
-        process.arguments = ["git", "clone", path, localPath]
-        process.launch()
-        process.waitUntilExit()
-    }
-    
-    private func checkout(path: String, tag: String) {
-        let process = Process()
-        process.currentDirectoryPath = path
-        process.launchPath = "/usr/bin/env"
-        process.arguments = ["git", "checkout", "tags/" + tag]
-        process.launch()
-        process.waitUntilExit()
     }
     
     @discardableResult
