@@ -69,12 +69,16 @@ public final class Fastfood {
             //TODO: add correct error
             throw Error.fastfileUpdatingFailed
         }
+        let taggedFastfileName = "Fastfile-\(lastTag.version)"
+        let fastfoodFolder = try Folder(path: Keys.fastfoodPath)
+        if let file = try? File(path: fastfoodFolder.path + "/" + taggedFastfileName) {
+            return file
+        }
         clone(fromPath: repoPath, toLocalPath: tempPath)
         checkout(path: tempPath, tag: lastTag.version)
-        let fastfoodFolder = try Folder(path: Keys.fastfoodPath)
         let fastfile = try File(path: tempPath + "/Fastfile")
         try? fastfoodFolder.file(named: "Fastfile").delete()
-        let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: "Fastfile-\(lastTag.version)")
+        let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: taggedFastfileName)
         try fastfile.move(to: subfolder)
         try? Folder(path: tempPath).delete()
         return fastfile
