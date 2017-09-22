@@ -11,6 +11,7 @@ public final class Fastfood {
     
     enum Error: Swift.Error {
         case missingArguments
+        case noTags
         case fastfileUpdatingFailed
     }
     
@@ -39,6 +40,35 @@ public final class Fastfood {
         print("🚀 Done!")
     }
     
+    @discardableResult
+    private func updateLocalFastfile(fromPath path: String) throws -> File {
+        let tempPath = Keys.fastfoodPath + "/tmp"
+        
+        func deleteTemp() {
+            try? Folder(path: tempPath).delete()
+        }
+        
+        deleteTemp()
+        
+        let tags = try self.tags(from: path).map(Tag.init)
+        guard let lastTag = tags.last else {
+            throw Error.noTags
+        }
+        let taggedFastfileName = Keys.fastfile + "-\(lastTag.version)"
+        let fastfoodFolder = try Folder(path: Keys.fastfoodPath)
+        if let file = try? File(path: fastfoodFolder.path + taggedFastfileName + "/" + Keys.fastfile) {
+            return file
+        }
+        clone(fromPath: path, toLocalPath: tempPath)
+        checkout(path: tempPath, tag: lastTag.version)
+        let fastfile = try File(path: tempPath + "/" + Keys.fastfile)
+        try? fastfoodFolder.file(named: Keys.fastfile).delete()
+        let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: taggedFastfileName)
+        try fastfile.move(to: subfolder)
+        deleteTemp()
+        return fastfile
+    }
+    
     private func tags(from path: String) -> [String] {
         let process = Process()
         process.launchPath = "/usr/bin/env"
@@ -57,30 +87,6 @@ public final class Fastfood {
         
         process.waitUntilExit()
         return output
-    }
-    
-    @discardableResult
-    private func updateLocalFastfile(fromPath path: String) throws -> File {
-        let tempPath = Keys.fastfoodPath + "/tmp"
-        try? Folder(path: tempPath).delete()
-        let tags = try self.tags(from: path).map(Tag.init)
-        guard let lastTag = tags.last else {
-            //TODO: add correct error
-            throw Error.fastfileUpdatingFailed
-        }
-        let taggedFastfileName = Keys.fastfile + "-\(lastTag.version)"
-        let fastfoodFolder = try Folder(path: Keys.fastfoodPath)
-        if let file = try? File(path: fastfoodFolder.path + taggedFastfileName + "/" + Keys.fastfile) {
-            return file
-        }
-        clone(fromPath: path, toLocalPath: tempPath)
-        checkout(path: tempPath, tag: lastTag.version)
-        let fastfile = try File(path: tempPath + "/" + Keys.fastfile)
-        try? fastfoodFolder.file(named: Keys.fastfile).delete()
-        let subfolder = try fastfoodFolder.createSubfolderIfNeeded(withName: taggedFastfileName)
-        try fastfile.move(to: subfolder)
-        try? Folder(path: tempPath).delete()
-        return fastfile
     }
     
     private func clone(fromPath path: String, toLocalPath localPath: String) {
