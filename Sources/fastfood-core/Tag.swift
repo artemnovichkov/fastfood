@@ -4,7 +4,8 @@
 
 import Foundation
 
-final class Tag {
+/// Struct for tag reference.
+struct Tag {
     
     enum Error: Swift.Error {
         case wrongFormat

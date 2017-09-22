@@ -25,6 +25,13 @@ public final class FastfileService {
         self.gitService = gitService
     }
     
+    /// Updates shared Fastfile. It checks local version and clones a new one if needed.
+    ///
+    /// - Parameters:
+    ///   - path: A path for remote repository.
+    ///   - tag: A tag for check.
+    /// - Returns: A shared file with needed content.
+    /// - Throws: In case of wrong of no any tags and `Files` framework errors.
     @discardableResult
     func updateSharedFastfileIfNeeded(fromPath path: String, tag: String?) throws -> File {
         let tags = try gitService.tags(from: path).map(Tag.init)
@@ -56,6 +63,11 @@ public final class FastfileService {
         return fastfile
     }
     
+    /// Updates local `Fastfile` in current project directory. Creates a new one if needed.
+    ///
+    /// - Parameter string: A string for adding.
+    /// - Returns: A project file with needed content.
+    /// - Throws: I case of reading or updating errors.
     @discardableResult
     func updateProjectFastfileIfNeeded(withString string: String) throws -> File {
         do {
@@ -85,7 +97,7 @@ public final class FastfileService {
     }
 }
 
-extension Array where Element == String {
+private extension Array where Element == String {
     
     func joinedPath() -> Element {
         return joined(separator: "/")

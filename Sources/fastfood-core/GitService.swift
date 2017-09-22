@@ -4,12 +4,17 @@
 
 import Foundation
 
+/// A service for git commands
 public final class GitService {
     
     public init() {
         
     }
     
+    /// Executes `ls-remote` command for tags only.
+    ///
+    /// - Parameter path: A path to remote repository.
+    /// - Returns: An array of tag references.
     func tags(from path: String) -> [String] {
         var output = [String]()
         
@@ -21,10 +26,20 @@ public final class GitService {
         return output
     }
     
+    /// Clones a remote repository
+    ///
+    /// - Parameters:
+    ///   - path: A path to remote repository.
+    ///   - localPath: A path to local folder.
     func clone(fromPath path: String, toLocalPath localPath: String) {
         process(arguments: ["git", "clone", path, localPath, "--quiet"])
     }
     
+    /// Checkouts for passed tag.
+    ///
+    /// - Parameters:
+    ///   - path: A path to remote repository.
+    ///   - tag: A tag for checkout.
     func checkout(path: String, tag: String) {
         process(launchPath: path, arguments: ["git", "checkout", "tags/" + tag, "--quiet"])
     }
