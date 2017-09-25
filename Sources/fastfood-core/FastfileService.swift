@@ -32,10 +32,11 @@ public final class FastfileService {
     /// - Parameters:
     ///   - path: A path for remote repository.
     ///   - tag: A tag for check.
+    ///   - branch: A branch of remote repository.
     /// - Returns: A shared file with needed content.
     /// - Throws: `FastfileService.Error` errors.
     @discardableResult
-    func updateSharedFastfileIfNeeded(fromPath path: String, tag: String?) throws -> String {
+    func updateSharedFastfileIfNeeded(fromPath path: String, tag: String?, branch: String?) throws -> String {
         let tags = try gitService.tags(from: path).map(Tag.init)
         let selectedTag: String?
         if let tag = tag {

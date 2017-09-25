@@ -36,7 +36,9 @@ public final class Fastfood {
             throw Error.wrongURL
         }
         
-        let path = try fastfileService.updateSharedFastfileIfNeeded(fromPath: url.absoluteString, tag: arguments.tag)
+        let path = try fastfileService.updateSharedFastfileIfNeeded(fromPath: url.absoluteString,
+                                                                    tag: arguments.tag,
+                                                                    branch: arguments.branch)
         print("🤖 Updating...")
         try fastfileService.updateProjectFastfileIfNeeded(withString: "import \(path)")
         print("🎉 Done!")
