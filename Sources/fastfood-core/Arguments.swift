@@ -9,13 +9,21 @@ struct Arguments {
     var url: URL?
     var tag: String?
     
-    init(arguments: [String]) {
+    init?(arguments: [String]) {
         for (index, argument) in arguments.enumerated() {
             switch argument.lowercased() {
             case "-u", "--url":
-                url = URL(string: arguments[index + 1])
+                let urlIndex = index + 1
+                guard arguments.count > urlIndex else {
+                    return nil
+                }
+                url = URL(string: arguments[urlIndex])
             case "-t", "--tag":
-                tag = arguments[index + 1]
+                let tagIndex = index + 1
+                guard arguments.count > tagIndex else {
+                    return nil
+                }
+                tag = arguments[tagIndex]
             default: break
             }
         }
