@@ -8,6 +8,7 @@ struct Arguments {
     
     var url: URL?
     var tag: String?
+    var branch: String?
     
     init?(arguments: [String]) {
         for (index, argument) in arguments.enumerated() {
@@ -24,6 +25,12 @@ struct Arguments {
                     return nil
                 }
                 tag = arguments[tagIndex]
+            case "-b", "--branch":
+                let branchIndex = index + 1
+                guard arguments.count > branchIndex else {
+                    return nil
+                }
+                branch = arguments[branchIndex]
             default: break
             }
         }
@@ -36,6 +43,8 @@ Usage: fastfood [options]
       URL to a repo contains Fastfile.
   -t, --tag:
       A version of Fastfile. Should be equals to any tag in Fastfile repo.
+  -b, --branch:
+      A branch of a repo contains Fastfile.
 """
     }()
 }
