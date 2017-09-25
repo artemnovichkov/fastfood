@@ -3,7 +3,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "fastfood",
+    name: "Fastfood",
+    products: [
+        .library(name: "Fastfood", targets: ["FastfoodCore"]),
+        ],
     dependencies: [
         .package(url: "https://github.com/johnsundell/files.git", from: "1.0.0"),
     ],
@@ -13,7 +16,7 @@ let package = Package(
             dependencies: ["Files"],
             path: "./Sources/fastfood-core"),
         .target(
-            name: "fastfood",
+            name: "Fastfood",
             dependencies: ["FastfoodCore"]),
     ]
 )
