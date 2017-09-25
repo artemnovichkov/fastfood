@@ -63,8 +63,8 @@ public final class FastfileService {
             return file.path
         }
         print("🦄 Clone \(path)...")
-        gitService.clone(fromPath: path, toLocalPath: fastfilesPath)
-        gitService.checkout(path: fastfilesPath, tag: tag)
+        try gitService.clone(fromPath: path, toLocalPath: fastfilesPath, branch: branch)
+        try gitService.checkout(path: fastfilesPath, tag: tag)
         do {
             let fastfile = try File(path: [fastfilesPath, Keys.fastfile].joinedPath())
             return fastfile.path

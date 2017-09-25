@@ -1,3 +1,4 @@
+
 //
 //  Copyright © 2017 Rosberry. All rights reserved.
 //
@@ -7,6 +8,10 @@ import Foundation
 /// A service for git commands
 public final class GitService {
     
+    enum Error: Swift.Error {
+        case processFailed(status: Int32, message: String)
+    }
+    
     public init() {
         
     }
@@ -15,10 +20,10 @@ public final class GitService {
     ///
     /// - Parameter path: A path to remote repository.
     /// - Returns: An array of tag references.
-    func tags(from path: String) -> [String] {
+    func tags(from path: String) throws -> [String] {
         var output = [String]()
         
-        if var string = process(arguments: ["git", "ls-remote", "--refs", "-t", path]) {
+        if var string = try process(arguments: ["git", "ls-remote", "--refs", "-t", path]) {
             string = string.trimmingCharacters(in: .newlines)
             output = string.components(separatedBy: "\n")
         }
@@ -31,8 +36,13 @@ public final class GitService {
     /// - Parameters:
     ///   - path: A path to remote repository.
     ///   - localPath: A path to local folder.
-    func clone(fromPath path: String, toLocalPath localPath: String) {
-        process(arguments: ["git", "clone", path, localPath, "--quiet"])
+    ///   - branch: A branch of remote repository. Default value is nil.
+    func clone(fromPath path: String, toLocalPath localPath: String, branch: String? = nil) throws {
+        var arguments = ["git", "clone", path, localPath, "--quiet"]
+        if let branch = branch {
+            arguments.append(contentsOf: ["-b", branch])
+        }
+        try process(arguments: arguments)
     }
     
     /// Checkouts for passed tag.
@@ -40,14 +50,14 @@ public final class GitService {
     /// - Parameters:
     ///   - path: A path to remote repository.
     ///   - tag: A tag for checkout.
-    func checkout(path: String, tag: String) {
-        process(launchPath: path, arguments: ["git", "checkout", "tags/" + tag, "--quiet"])
+    func checkout(path: String, tag: String) throws {
+        try process(launchPath: path, arguments: ["git", "checkout", "tags/" + tag, "--quiet"])
     }
     
     // MARK: - Private
     
     @discardableResult
-    private func process(launchPath: String? = nil, arguments: [String]) -> String? {
+    private func process(launchPath: String? = nil, arguments: [String]) throws -> String? {
         let process = Process()
         if let launchPath = launchPath {
             process.currentDirectoryPath = launchPath
@@ -55,14 +65,53 @@ public final class GitService {
         process.launchPath = "/usr/bin/env"
         process.arguments = arguments
         
-        let outpipe = Pipe()
-        process.standardOutput = outpipe
+        var errorData = Data()
+        
+        let outputPipe = Pipe()
+        process.standardOutput = outputPipe
+        
+        let errorPipe = Pipe()
+        process.standardError = errorPipe
+        
+        errorPipe.fileHandleForReading.readabilityHandler = { handler in
+            let data = handler.availableData
+            errorData.append(data)
+        }
+        
         process.launch()
         
-        let outdata = outpipe.fileHandleForReading.readDataToEndOfFile()
+        let outdata = outputPipe.fileHandleForReading.readDataToEndOfFile()
         
         process.waitUntilExit()
         
+        if process.terminationStatus != 0 {
+            throw Error.processFailed(status: process.terminationStatus, message: errorData.shellString)
+        }
+        
         return String(data: outdata, encoding: .utf8)
+    }
+}
+
+private extension Data {
+    
+    var shellString: String {
+        guard let output = String(data: self, encoding: .utf8) else {
+            return ""
+        }
+        
+        if output.hasSuffix("\n") {
+            return output
+        }
+        
+        return String(output[..<output.endIndex])
+    }
+}
+
+extension GitService.Error: LocalizedError {
+    
+    var errorDescription: String? {
+        switch self {
+        case .processFailed(status: _, message: let message): return message
+        }
     }
 }
