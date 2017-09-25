@@ -6,8 +6,12 @@ import Foundation
 
 public final class Fastfood {
     
+    private enum Keys {
+        static let url = "https://github.com/artemnovichkov/fastfile-test"
+    }
+    
     enum Error: Swift.Error {
-        case noURL
+        case wrongURL
     }
     
     private var arguments: [String]
@@ -26,9 +30,10 @@ public final class Fastfood {
             return
         }
         
-        guard let url = arguments.url else {
+        let argumentURL = arguments.url ?? URL(string: Keys.url)
+        guard let url = argumentURL else {
             print(Arguments.description)
-            throw Error.noURL
+            throw Error.wrongURL
         }
         
         let path = try fastfileService.updateSharedFastfileIfNeeded(fromPath: url.absoluteString, tag: arguments.tag)
@@ -42,7 +47,7 @@ extension Fastfood.Error: LocalizedError {
     
     var errorDescription: String? {
         switch self {
-        case .noURL: return "URL doesn't defined. Use --url parameter."
+        case .wrongURL: return "Wrong URL. Use --url parameter."
         }
     }
 }
