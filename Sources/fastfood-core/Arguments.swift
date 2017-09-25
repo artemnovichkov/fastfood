@@ -6,13 +6,22 @@ import Foundation
 
 struct Arguments {
     
+    enum Command {
+        case update, help
+    }
+    
     var url: URL?
     var tag: String?
     var branch: String?
+    var command = Command.help
     
     init?(arguments: [String]) {
         for (index, argument) in arguments.enumerated() {
             switch argument.lowercased() {
+            case "update":
+                command = .update
+            case "help":
+                command = .help
             case "-u", "--url":
                 let urlIndex = index + 1
                 guard arguments.count > urlIndex else {
@@ -38,7 +47,7 @@ struct Arguments {
     
     static let description: String = {
         return """
-Usage: fastfood [options]
+Usage: fastfood update [options]
   -u, --url:
       URL to a repo contains Fastfile.
   -t, --tag:

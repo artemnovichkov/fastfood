@@ -30,6 +30,11 @@ public final class Fastfood {
             return
         }
         
+        guard arguments.command == .update else {
+            print(Arguments.description)
+            return
+        }
+        
         let argumentURL = arguments.url ?? URL(string: Keys.url)
         guard let url = argumentURL else {
             print(Arguments.description)

@@ -1,6 +1,6 @@
 # 🍔🍟 Fastfood
 
-[![Swift 4](https://img.shields.io/badge/swift-4-orange.svg?style=flat)](https://swift.org)
+[![Swift 4](https://img.shields.io/badge/Swift-4-orange.svg?style=flat)](https://swift.org)
 [![Homebrew](https://img.shields.io/badge/homebrew-compatible-brightgreen.svg?style=flat)]()
 [![Swift Package Manager](https://img.shields.io/badge/spm-compatible-brightgreen.svg?style=flat)](https://swift.org/package-manager)
 [![BuddyBuild](https://dashboard.buddybuild.com/api/statusImage?appID=59c87630d2b355000114c416&branch=master&build=latest)](https://dashboard.buddybuild.com/apps/59c87630d2b355000114c416/build/latest?branch=master)
@@ -12,6 +12,7 @@ Fastfood is a simple way to share [lanes](https://github.com/fastlane/fastlane) 
 
 - Syncing with remote `Fastfile`s
 - Different `Fastfile` versions via tags
+- Branch selection
 - `Fastfile` import updating in projects
 
 ## Requirements
@@ -21,19 +22,20 @@ Fastfood is a simple way to share [lanes](https://github.com/fastlane/fastlane) 
 
 ## Usage
 
-Fastfood is useful if you have shared lanes across multiple projects and you want to store the Fastfile in a remote git repository with local saving.
-To use it run `fastfood` in a project folder. That's all! Fastfood updates local saved `Fastfile`s if needed and creates a new `Fastfile` in current project or updates an existing file. By default Fastfood clones files from [this](https://github.com/artemnovichkov/fastfile-test) repo, but you can change it via `--url` (or `-u`) option:
+Fastfood is useful if you have shared lanes across multiple projects and you want to store the Fastfile in a remote git repository with local caching.
+To use it run `fastfood update` in a project folder. That's all! Fastfood updates local saved `Fastfile`s if needed and creates a new `Fastfile` in current project or updates an existing file. By default Fastfood clones files from [this](https://github.com/artemnovichkov/fastfile-test) repo.
+
+Run `fastfood help` to see available options:
 
 ```bash
-$ fastfood -u https://github.com/artemnovichkov/fastfile-test.git
+Usage: fastfood update [options]
+  -u, --url:
+      URL to a repo contains Fastfile.
+  -t, --tag:
+      A version of Fastfile. Should be equals to any tag in Fastfile repo.
+  -b, --branch:
+      A branch of a repo contains Fastfile.
 ```
-Also you can select version of `Fastfile` via `--tag` (or `-t`) option:
-
-```bash
-$ fastfood -t 1.0
-```
-By default Fastfood updates last available version.
-
 ## Installation
 
 ### Homebrew (recommended):
