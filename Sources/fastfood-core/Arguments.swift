@@ -14,6 +14,7 @@ struct Arguments {
     var tag: String?
     var branch: String?
     var command = Command.help
+    var force = false
     
     init?(arguments: [String]) {
         for (index, argument) in arguments.enumerated() {
@@ -40,6 +41,8 @@ struct Arguments {
                     return nil
                 }
                 branch = arguments[branchIndex]
+            case "-f", "--force":
+                force = true
             default: break
             }
         }
@@ -54,6 +57,8 @@ Usage: fastfood update [options]
       A version of Fastfile. Should be equals to any tag in Fastfile repo.
   -b, --branch:
       A branch of a repo contains Fastfile.
+  -f, --force:
+      Update to last version.
 """
     }()
 }
