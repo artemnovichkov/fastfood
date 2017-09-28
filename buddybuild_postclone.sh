@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-swift tests
+swift test
 swift package generate-xcodeproj
