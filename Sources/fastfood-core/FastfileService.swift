@@ -27,6 +27,29 @@ public final class FastfileService {
         self.gitService = gitService
     }
     
+    /// Creates tag from project Fastfile import.
+    ///
+    /// - Returns: a tag from Fastfile import.
+    func tag() -> String? {
+        do {
+            let fastfile = try projectFastfile()
+            let fastfileContent = try fastfile.readAsString()
+            let fastfileStrings = fastfileContent.components(separatedBy: "\n")
+            let fastfoodImport = fastfileStrings.first { $0.contains(Keys.fastfoodPath) }
+            guard let unwrappedImport = fastfoodImport,
+                let fastfoodPathRange = unwrappedImport.range(of: Keys.fastfoodPath + "/" + Keys.fastfile + "-") else {
+                    return nil
+            }
+            let substring = String(unwrappedImport[fastfoodPathRange.upperBound...])
+            let slashRange = substring.range(of: "/")!
+            let tag = substring[..<slashRange.lowerBound]
+            return String(tag)
+        }
+        catch {
+            return nil
+        }
+    }
+    
     /// Updates shared Fastfile. It checks local version and clones a new one if needed.
     ///
     /// - Parameters:
@@ -119,7 +142,7 @@ extension FastfileService.Error: LocalizedError {
         switch self {
         case .noTags: return "Tag can't be founded."
         case .fastfileUpdatingFailed: return "Fastfile can't be founded or updated."
-        case .fastfileReadingFailed: return "Remote repository doesn't contain Fastfile."
+        case .fastfileReadingFailed: return "Remote repository doesn't contain Fastfile in root folder."
         case .fastfoodFolderReadingFailed: return "Can't find fastfood folder."
         }
     }
