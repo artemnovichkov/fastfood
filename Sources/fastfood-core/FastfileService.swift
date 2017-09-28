@@ -86,8 +86,12 @@ public final class FastfileService {
         if let file = try? File(path: [fastfoodFolder.path + taggedFastfileName, Keys.fastfile].joinedPath()) {
             return file.path
         }
-        print("🦄 Clone \(path)...")
-        try gitService.clone(fromPath: path, toLocalPath: fastfilesPath, branch: branch)
+        
+        let fastfilesFolder = try? Folder(path: fastfilesPath)
+        if fastfilesFolder == nil {
+            print("🦄 Clone \(path)...")
+            try gitService.clone(fromPath: path, toLocalPath: fastfilesPath, branch: branch)
+        }
         try gitService.checkout(path: fastfilesPath, tag: tag)
         do {
             let fastfile = try File(path: [fastfilesPath, Keys.fastfile].joinedPath())
