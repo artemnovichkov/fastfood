@@ -17,6 +17,7 @@ public final class FastfileService {
     private enum Keys {
         static let fastfoodPath = "/usr/local/bin/.fastfood"
         static let fastfile = "Fastfile"
+        static let fastfilePath = "fastlane/Fastfile"
     }
 
     private let fileSystem: FileSystem
@@ -94,7 +95,7 @@ public final class FastfileService {
         }
         try gitService.checkout(path: fastfilesPath, tag: tag)
         do {
-            let fastfile = try File(path: [fastfilesPath, Keys.fastfile].joinedPath())
+            let fastfile = try File(path: [fastfilesPath, Keys.fastfilePath].joinedPath())
             return fastfile.path
         }
         catch {
@@ -146,7 +147,7 @@ extension FastfileService.Error: LocalizedError {
         switch self {
         case .noTags: return "Tag can't be founded."
         case .fastfileUpdatingFailed: return "Fastfile can't be founded or updated."
-        case .fastfileReadingFailed: return "Remote repository doesn't contain Fastfile in root folder."
+        case .fastfileReadingFailed: return "Remote repository doesn't contain Fastfile."
         case .fastfoodFolderReadingFailed: return "Can't find fastfood folder."
         }
     }
