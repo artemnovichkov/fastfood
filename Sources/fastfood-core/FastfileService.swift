@@ -10,7 +10,7 @@ public final class FastfileService {
     enum Error: Swift.Error {
         case noTags
         case fastfileUpdatingFailed
-        case fastfileReadingFailed
+        case fastfileReadingFailed(path: String)
         case fastfoodFolderReadingFailed
     }
     
@@ -98,12 +98,14 @@ public final class FastfileService {
             try gitService.clone(fromPath: remotePath, toLocalPath: fastfilesPath, branch: branch)
         }
         try gitService.checkout(path: fastfilesPath, tag: tag)
+        
+        let filePath = fastfilePath ?? Keys.fastfilePath
         do {
-            let fastfile = try File(path: [fastfilesPath, fastfilePath ?? Keys.fastfilePath].joinedPath())
+            let fastfile = try File(path: [fastfilesPath, filePath].joinedPath())
             return fastfile.path
         }
         catch {
-            throw Error.fastfileReadingFailed
+            throw Error.fastfileReadingFailed(path: filePath)
         }
     }
     
@@ -151,7 +153,7 @@ extension FastfileService.Error: LocalizedError {
         switch self {
         case .noTags: return "Tag can't be founded."
         case .fastfileUpdatingFailed: return "Fastfile can't be founded or updated."
-        case .fastfileReadingFailed: return "Remote repository doesn't contain Fastfile."
+        case .fastfileReadingFailed(let path): return "Remote repository doesn't contain Fastfile at path: \(path)."
         case .fastfoodFolderReadingFailed: return "Can't find fastfood folder."
         }
     }
