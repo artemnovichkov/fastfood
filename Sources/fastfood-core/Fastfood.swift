@@ -7,7 +7,7 @@ import Foundation
 public final class Fastfood {
     
     private enum Keys {
-        static let url = "https://github.com/artemnovichkov/fastfile-test"
+        static let url = "https://github.com/rosberry/RSBFastlane"
     }
     
     enum Error: Swift.Error {
