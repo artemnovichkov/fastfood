@@ -6,14 +6,14 @@ import Foundation
 import Files
 
 public final class FastfileService {
-    
+
     enum Error: Swift.Error {
         case noTags
         case fastfileUpdatingFailed
         case fastfileReadingFailed(path: String)
         case fastfoodFolderReadingFailed
     }
-    
+
     private enum Keys {
         static let fastfoodPath = "/usr/local/bin/.fastfood"
         static let fastfile = "Fastfile"
@@ -22,12 +22,12 @@ public final class FastfileService {
 
     private let fileSystem: FileSystem
     private let gitService: GitService
-    
+
     public init(fileSystem: FileSystem = .init(), gitService: GitService = .init()) {
         self.fileSystem = fileSystem
         self.gitService = gitService
     }
-    
+
     /// Creates tag from project Fastfile import.
     ///
     /// - Returns: a tag from Fastfile import.
@@ -50,7 +50,7 @@ public final class FastfileService {
             return nil
         }
     }
-    
+
     /// Updates shared Fastfile. It checks local version and clones a new one if needed.
     ///
     /// - Parameters:
@@ -77,7 +77,7 @@ public final class FastfileService {
             throw Error.noTags
         }
         let taggedFastfileName = [Keys.fastfile, tag].joined(separator: "-")
-        
+
         let fastfoodFolder: Folder
         do {
             fastfoodFolder = try Folder(path: Keys.fastfoodPath)
@@ -85,20 +85,20 @@ public final class FastfileService {
         catch {
             throw Error.fastfoodFolderReadingFailed
         }
-        
+
         let fastfilesPath = fastfoodFolder.path + taggedFastfileName
-        
+
         if let file = try? File(path: [fastfoodFolder.path + taggedFastfileName, Keys.fastfile].joinedPath()) {
             return file.path
         }
-        
+
         let fastfilesFolder = try? Folder(path: fastfilesPath)
         if fastfilesFolder == nil {
             print("🦄 Clone \(remotePath)...")
             try gitService.clone(fromPath: remotePath, toLocalPath: fastfilesPath, branch: branch)
         }
         try gitService.checkout(path: fastfilesPath, tag: tag)
-        
+
         let filePath = fastfilePath ?? Keys.fastfilePath
         do {
             let fastfile = try File(path: [fastfilesPath, filePath].joinedPath())
@@ -108,7 +108,7 @@ public final class FastfileService {
             throw Error.fastfileReadingFailed(path: filePath)
         }
     }
-    
+
     /// Updates local `Fastfile` in current project directory. Creates a new one if needed.
     ///
     /// - Parameter string: A string for adding.
@@ -131,9 +131,9 @@ public final class FastfileService {
             throw Error.fastfileUpdatingFailed
         }
     }
-    
+
     // MARK: - Private
-    
+
     private func projectFastfile() throws -> File {
         let fastlaneFolder = try fileSystem.currentFolder.createSubfolderIfNeeded(withName: "fastlane")
         return try fastlaneFolder.createFileIfNeeded(withName: Keys.fastfile)
@@ -141,14 +141,14 @@ public final class FastfileService {
 }
 
 private extension Array where Element == String {
-    
+
     func joinedPath() -> Element {
         return joined(separator: "/")
     }
 }
 
 extension FastfileService.Error: LocalizedError {
-    
+
     var errorDescription: String? {
         switch self {
         case .noTags: return "Tag can't be founded."

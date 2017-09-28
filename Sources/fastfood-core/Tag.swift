@@ -6,14 +6,14 @@ import Foundation
 
 /// Struct for tag reference.
 struct Tag {
-    
+
     enum Error: Swift.Error {
         case wrongFormat
     }
-    
+
     let hash: String
     let version: String
-    
+
     init(string: String) throws {
         let components = string.components(separatedBy: "\t")
         guard components.count == 2 else {

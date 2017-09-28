@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
 
-swift test
 swift package generate-xcodeproj
+
+if ! which swiftlint >/dev/null; then
+brew install swiftlint
+fi
+
+swiftlint

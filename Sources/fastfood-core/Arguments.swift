@@ -5,18 +5,18 @@
 import Foundation
 
 struct Arguments {
-    
+
     enum Command {
         case update, help
     }
-    
+
     var url: URL?
     var tag: String?
     var branch: String?
     var path: String?
     var command = Command.help
     var force = false
-    
+
     init?(arguments: [String]) {
         for (index, argument) in arguments.enumerated() {
             switch argument.lowercased() {
@@ -54,7 +54,7 @@ struct Arguments {
             }
         }
     }
-    
+
     static let description: String = {
         return """
 Usage: fastfood update [options]
