@@ -17,6 +17,7 @@ struct Arguments {
     var command = Command.help
     var force = false
 
+    //swiftlint:disable cyclomatic_complexity
     init?(arguments: [String]) {
         for (index, argument) in arguments.enumerated() {
             switch argument.lowercased() {
@@ -54,6 +55,7 @@ struct Arguments {
             }
         }
     }
+    //swiftlint:enable cyclomatic_complexity
 
     static let description: String = {
         return """
