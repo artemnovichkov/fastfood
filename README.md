@@ -23,18 +23,22 @@ Fastfood is a simple way to share [lanes](https://github.com/fastlane/fastlane) 
 ## Usage
 
 Fastfood is useful if you have shared lanes across multiple projects and you want to store the Fastfile in a remote git repository with local caching.
-To use it run `fastfood update` in a project folder. That's all! Fastfood updates local saved `Fastfile`s if needed and creates a new `Fastfile` in current project or updates an existing file. By default Fastfood clones files from [this](https://github.com/artemnovichkov/fastfile-test) repo.
+To use it run `fastfood update` in a project folder. That's all! Fastfood updates local saved `Fastfile`s if needed and creates a new `Fastfile` in current project or updates an existing file. By default Fastfood clones files from [this](https://github.com/rosberry/RSBFastlane) repo.
 
 Run `fastfood help` to see available options:
 
 ```bash
 Usage: fastfood update [options]
   -u, --url:
-      URL to a repo contains Fastfile.
+      An URL to a repo contains Fastfile.
   -t, --tag:
       A version of Fastfile. Should be equals to any tag in Fastfile repo.
   -b, --branch:
       A branch of a repo contains Fastfile.
+  -f, --force:
+      Update to last version.
+  -p, --path:
+      A path to Fastfile. `fastlane/Fastfile` by default.
 ```
 ## Installation
 
@@ -68,9 +72,9 @@ let package = Package(
 ### Manually:
 Drag `Sources` folder from [last release](https://github.com/artemnovichkov/fastfood/releases) into your project.
 
-## Authors
+## Author
 
-* Artem Novichkov, novichkoff93@gmail.com
+Artem Novichkov, novichkoff93@gmail.com
 
 ## License
 

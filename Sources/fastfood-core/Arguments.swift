@@ -13,7 +13,9 @@ struct Arguments {
     var url: URL?
     var tag: String?
     var branch: String?
+    var path: String?
     var command = Command.help
+    var force = false
     
     init?(arguments: [String]) {
         for (index, argument) in arguments.enumerated() {
@@ -40,6 +42,14 @@ struct Arguments {
                     return nil
                 }
                 branch = arguments[branchIndex]
+            case "-f", "--force":
+                force = true
+            case "-p", "--path":
+                let pathIndex = index + 1
+                guard arguments.count > pathIndex else {
+                    return nil
+                }
+                path = arguments[pathIndex]
             default: break
             }
         }
@@ -54,6 +64,10 @@ Usage: fastfood update [options]
       A version of Fastfile. Should be equals to any tag in Fastfile repo.
   -b, --branch:
       A branch of a repo contains Fastfile.
+  -f, --force:
+      Update to last version.
+  -p, --path:
+      A path to Fastfile. `fastlane/Fastfile` by default.
 """
     }()
 }
