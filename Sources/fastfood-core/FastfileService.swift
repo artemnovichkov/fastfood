@@ -55,13 +55,17 @@ public final class FastfileService {
     ///
     /// - Parameters:
     ///   - path: A path for remote repository.
-    ///   - tag: A tag for check.
-    ///   - branch: A branch of remote repository.
+    ///   - tag: A tag for check. Default value is nil.
+    ///   - branch: A branch of remote repository. Default value is nil.
+    ///   - fastfilePath: a path to Fastfile. Converts to `fastlane/Fastfile` in case of `nil`.
     /// - Returns: A shared file with needed content.
     /// - Throws: `FastfileService.Error` errors.
     @discardableResult
-    func updateSharedFastfileIfNeeded(fromPath path: String, tag: String?, branch: String?) throws -> String {
-        let tags = try gitService.tags(from: path).map(Tag.init)
+    func updateSharedFastfileIfNeeded(fromRemotePath remotePath: String,
+                                      tag: String? = nil,
+                                      branch: String? = nil,
+                                      fastfilePath: String? = nil) throws -> String {
+        let tags = try gitService.tags(from: remotePath).map(Tag.init)
         let selectedTag: String?
         if let tag = tag {
             selectedTag = tags.first { $0.version == tag }?.version
@@ -90,12 +94,12 @@ public final class FastfileService {
         
         let fastfilesFolder = try? Folder(path: fastfilesPath)
         if fastfilesFolder == nil {
-            print("🦄 Clone \(path)...")
-            try gitService.clone(fromPath: path, toLocalPath: fastfilesPath, branch: branch)
+            print("🦄 Clone \(remotePath)...")
+            try gitService.clone(fromPath: remotePath, toLocalPath: fastfilesPath, branch: branch)
         }
         try gitService.checkout(path: fastfilesPath, tag: tag)
         do {
-            let fastfile = try File(path: [fastfilesPath, Keys.fastfilePath].joinedPath())
+            let fastfile = try File(path: [fastfilesPath, fastfilePath ?? Keys.fastfilePath].joinedPath())
             return fastfile.path
         }
         catch {

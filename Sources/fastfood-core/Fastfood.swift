@@ -43,9 +43,10 @@ public final class Fastfood {
         
         let tag = arguments.force ? nil : fastfileService.tag()
         
-        let path = try fastfileService.updateSharedFastfileIfNeeded(fromPath: url.absoluteString,
+        let path = try fastfileService.updateSharedFastfileIfNeeded(fromRemotePath: url.absoluteString,
                                                                     tag: tag,
-                                                                    branch: arguments.branch)
+                                                                    branch: arguments.branch,
+                                                                    fastfilePath: arguments.path)
         print("🤖 Updating...")
         try fastfileService.updateProjectFastfileIfNeeded(withString: "import \(path)")
         print("🎉 Done!")
