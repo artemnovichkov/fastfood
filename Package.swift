@@ -18,5 +18,6 @@ let package = Package(
         .target(
             name: "Fastfood",
             dependencies: ["FastfoodCore"]),
+        .testTarget(name: "FastfoodCoreTests", dependencies: ["FastfoodCore"]),
     ]
 )
