@@ -76,7 +76,7 @@ public final class FastfileService {
         guard let tag = selectedTag else {
             throw Error.noTags
         }
-        let taggedFastfileName = [Keys.fastfile, tag].joined(separator: "-")
+        let fastfileFolderName = [Keys.fastfile, branch ?? tag].joined(separator: "-")
 
         let fastfoodFolder: Folder
         do {
@@ -86,9 +86,9 @@ public final class FastfileService {
             throw Error.fastfoodFolderReadingFailed
         }
 
-        let fastfilesPath = fastfoodFolder.path + taggedFastfileName
+        let fastfilesPath = fastfoodFolder.path + fastfileFolderName
 
-        if let file = try? File(path: [fastfoodFolder.path + taggedFastfileName, Keys.fastfile].joinedPath()) {
+        if let file = try? File(path: [fastfoodFolder.path + fastfileFolderName, Keys.fastfile].joinedPath()) {
             return file.path
         }
 
@@ -97,7 +97,9 @@ public final class FastfileService {
             print("🦄 Clone \(remotePath)...")
             try gitService.clone(fromPath: remotePath, toLocalPath: fastfilesPath, branch: branch)
         }
-        try gitService.checkout(path: fastfilesPath, tag: tag)
+        if branch == nil {
+            try gitService.checkout(path: fastfilesPath, tag: tag)
+        }
 
         let filePath = fastfilePath ?? Keys.fastfilePath
         do {
