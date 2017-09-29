@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import Files
 
 public final class Fastfood {
 
@@ -49,6 +50,12 @@ public final class Fastfood {
                                                                     fastfilePath: arguments.path)
         print("🤖 Updating...")
         try fastfileService.updateProjectFastfileIfNeeded(withString: "import \(path)")
+        var pathComponents = path.components(separatedBy: "/")
+        pathComponents.removeLast()
+        let fastlanePath = pathComponents.joined(separator: "/") + "/"
+
+        fastfileService.copyFilesIfNeeded(atPaths: [fastlanePath + ".env",
+                                                    fastlanePath + "Appfile"])
         print("🎉 Done!")
     }
 }

@@ -132,6 +132,19 @@ public final class FastfileService {
         }
     }
 
+    /// Copies files at paths to fastlane folder.
+    ///
+    /// - Parameter paths: the paths to the files for copying.
+    func copyFilesIfNeeded(atPaths paths: [String]) {
+        guard let fastlaneFolder = try? Folder.current.createSubfolderIfNeeded(withName: "fastlane") else {
+            return
+        }
+        paths.forEach { path in
+            let envFile = try? File(path: path)
+            try? envFile?.copy(to: fastlaneFolder)
+        }
+    }
+
     // MARK: - Private
 
     private func projectFastfile() throws -> File {
