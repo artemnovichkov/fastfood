@@ -4,7 +4,7 @@ OS?=sierra
 PREFIX?=/usr/local
 PROJECT?=Fastfood
 RELEASE_BINARY_FOLDER?=$(BUILD_FOLDER)/release/$(PROJECT)
-VERSION?=1.1
+VERSION?=1.1.1
 
 build:
 	swift build -c release -Xswiftc -static-stdlib
