@@ -11,8 +11,7 @@ struct Arguments {
     }
 
     var url: URL?
-    var tag: String?
-    var branch: String?
+    var version: String?
     var path: String?
     var command = Command.help
     var force = false
@@ -31,18 +30,12 @@ struct Arguments {
                     return nil
                 }
                 url = URL(string: arguments[urlIndex])
-            case "-t", "--tag":
-                let tagIndex = index + 1
-                guard arguments.count > tagIndex else {
+            case "-v", "--version":
+                let versionIndex = index + 1
+                guard arguments.count > versionIndex else {
                     return nil
                 }
-                tag = arguments[tagIndex]
-            case "-b", "--branch":
-                let branchIndex = index + 1
-                guard arguments.count > branchIndex else {
-                    return nil
-                }
-                branch = arguments[branchIndex]
+                version = arguments[versionIndex]
             case "-f", "--force":
                 force = true
             case "-p", "--path":
@@ -62,10 +55,8 @@ struct Arguments {
 Usage: fastfood update [options]
   -u, --url:
       URL to a repo contains Fastfile.
-  -t, --tag:
-      A version of Fastfile. Should be equals to any tag in Fastfile repo.
-  -b, --branch:
-      A branch of a repo contains Fastfile.
+  -v, --version:
+      A tag or branch name.
   -f, --force:
       Update to last version.
   -p, --path:

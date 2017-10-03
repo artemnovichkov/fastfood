@@ -53,6 +53,15 @@ public final class GitService {
         try process(launchPath: path, arguments: ["git", "checkout", "tags/" + tag, "--quiet"])
     }
 
+    /// Checkouts for passed branch.
+    ///
+    /// - Parameters:
+    ///   - path: A path to remote repository.
+    ///   - branch: A branch for checkout.
+    func checkout(path: String, branch: String) throws {
+        try process(launchPath: path, arguments: ["git", "checkout", branch])
+    }
+
     // MARK: - Private
 
     @discardableResult

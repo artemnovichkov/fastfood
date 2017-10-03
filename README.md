@@ -11,8 +11,7 @@ Fastfood is a simple way to share [lanes](https://github.com/fastlane/fastlane) 
 ## Features
 
 - Syncing with remote `Fastfile`s
-- Different `Fastfile` versions via tags
-- Branch selection
+- Different `Fastfile` versions via tags and branches
 - `Fastfile` import updating in projects
 
 ## Requirements
@@ -30,11 +29,9 @@ Run `fastfood help` to see available options:
 ```bash
 Usage: fastfood update [options]
   -u, --url:
-      An URL to a repo contains Fastfile.
-  -t, --tag:
-      A version of Fastfile. Should be equals to any tag in Fastfile repo.
-  -b, --branch:
-      A branch of a repo contains Fastfile.
+      URL to a repo contains Fastfile.
+  -v, --version:
+      A tag or branch name.
   -f, --force:
       Update to last version.
   -p, --path:
