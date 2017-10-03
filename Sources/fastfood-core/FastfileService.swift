@@ -28,10 +28,10 @@ public final class FastfileService {
         self.gitService = gitService
     }
 
-    /// Creates tag from project Fastfile import.
+    /// Creates version from project Fastfile import.
     ///
-    /// - Returns: a tag from Fastfile import.
-    func tag() -> String? {
+    /// - Returns: a version from Fastfile import.
+    func version() -> String? {
         do {
             let fastfile = try projectFastfile()
             let fastfileContent = try fastfile.readAsString()
@@ -43,8 +43,8 @@ public final class FastfileService {
             }
             let substring = String(unwrappedImport[fastfoodPathRange.upperBound...])
             let slashRange = substring.range(of: "/")!
-            let tag = substring[..<slashRange.lowerBound]
-            return String(tag)
+            let version = substring[..<slashRange.lowerBound]
+            return String(version)
         }
         catch {
             return nil
@@ -55,60 +55,51 @@ public final class FastfileService {
     ///
     /// - Parameters:
     ///   - path: A path for remote repository.
-    ///   - tag: A tag for check. Default value is nil.
-    ///   - branch: A branch of remote repository. Default value is nil.
+    ///   - branch: A tag or a branch of remote repository. Default value is nil.
     ///   - fastfilePath: a path to Fastfile. Converts to `fastlane/Fastfile` in case of `nil`.
-    /// - Returns: A shared file with needed content.
+    /// - Returns: A path to shared Fastfile.
     /// - Throws: `FastfileService.Error` errors.
     @discardableResult
     func updateSharedFastfileIfNeeded(fromRemotePath remotePath: String,
-                                      tag: String? = nil,
-                                      branch: String? = nil,
+                                      version: String? = nil,
                                       fastfilePath: String? = nil) throws -> String {
-        let tags = try gitService.tags(from: remotePath).map(Tag.init)
-        let selectedTag: String?
-        if let tag = tag {
-            selectedTag = tags.first { $0.version == tag }?.version
+        let finalVersion: String
+        if let version = version {
+            finalVersion = version
         }
         else {
-            selectedTag = tags.last?.version
+            let tag = try gitService.tags(from: remotePath).map(Tag.init).first
+            if let versionTag = tag {
+                finalVersion = versionTag.version
+            }
+            else {
+                throw Error.noTags
+            }
         }
-        guard let tag = selectedTag else {
-            throw Error.noTags
+        let fastfileVersionFolderPath = Keys.fastfoodPath + "/" + Keys.fastfile + "-" + finalVersion
+        if let fastfile = try? File(path: fastfileVersionFolderPath + "/" + Keys.fastfilePath) {
+            return fastfile.path
         }
-        let fastfileFolderName = [Keys.fastfile, branch ?? tag].joined(separator: "-")
 
-        let fastfoodFolder: Folder
+        print("🦄 Clone \(remotePath)...")
+        try gitService.clone(fromPath: remotePath, toLocalPath: fastfileVersionFolderPath)
+
+        let tag = try gitService.tags(from: remotePath).map(Tag.init).first { $0.version == finalVersion }
+        if let versionTag = tag {
+            try gitService.checkout(path: fastfileVersionFolderPath, tag: versionTag.version)
+        }
+        else {
+            try gitService.checkout(path: fastfileVersionFolderPath, branch: finalVersion)
+        }
+        let fastfilePath = fastfileVersionFolderPath + "/" + Keys.fastfilePath
         do {
-            fastfoodFolder = try Folder(path: Keys.fastfoodPath)
-        }
-        catch {
-            throw Error.fastfoodFolderReadingFailed
-        }
-
-        let fastfilesPath = fastfoodFolder.path + fastfileFolderName
-
-        if let file = try? File(path: [fastfoodFolder.path + fastfileFolderName, Keys.fastfile].joinedPath()) {
-            return file.path
-        }
-
-        let fastfilesFolder = try? Folder(path: fastfilesPath)
-        if fastfilesFolder == nil {
-            print("🦄 Clone \(remotePath)...")
-            try gitService.clone(fromPath: remotePath, toLocalPath: fastfilesPath, branch: branch)
-        }
-        if branch == nil {
-            try gitService.checkout(path: fastfilesPath, tag: tag)
-        }
-
-        let filePath = fastfilePath ?? Keys.fastfilePath
-        do {
-            let fastfile = try File(path: [fastfilesPath, filePath].joinedPath())
+            let fastfile = try File(path: fastfilePath)
             return fastfile.path
         }
         catch {
-            throw Error.fastfileReadingFailed(path: filePath)
+            throw Error.fastfileReadingFailed(path: fastfilePath)
         }
+
     }
 
     /// Updates local `Fastfile` in current project directory. Creates a new one if needed.
