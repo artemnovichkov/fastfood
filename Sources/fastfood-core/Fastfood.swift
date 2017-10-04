@@ -52,17 +52,12 @@ public final class Fastfood {
             }
         }
 
-        let path = try fastfileService.updateSharedFastfileIfNeeded(fromRemotePath: url.absoluteString,
+        let checkCache = !arguments.noCache
+        let path = try fastfileService.updateSharedFastlaneIfNeeded(fromRemotePath: url.absoluteString,
                                                                     version: version,
-                                                                    fastfilePath: arguments.path)
+                                                                    checkCache: checkCache)
         print("🤖 Updating...")
-        try fastfileService.updateProjectFastfileIfNeeded(withString: "import \(path)")
-        var pathComponents = path.components(separatedBy: "/")
-        pathComponents.removeLast()
-        let fastlanePath = pathComponents.joined(separator: "/") + "/"
-
-        fastfileService.copyFilesIfNeeded(atPaths: [fastlanePath + ".env",
-                                                    fastlanePath + "Appfile"])
+        try fastfileService.updateProjectFastlaneIfNeeded(withPath: path + "fastlane")
         print("🎉 Done!")
     }
 }
