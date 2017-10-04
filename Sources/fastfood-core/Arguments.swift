@@ -12,7 +12,6 @@ struct Arguments {
 
     var url: URL?
     var version: String?
-    var path: String?
     var command = Command.help
     var force = false
     var noCache = false
@@ -39,12 +38,6 @@ struct Arguments {
                 version = arguments[versionIndex]
             case "-f", "--force":
                 force = true
-            case "-p", "--path":
-                let pathIndex = index + 1
-                guard arguments.count > pathIndex else {
-                    return nil
-                }
-                path = arguments[pathIndex]
             case "--no-cache":
                 noCache = true
             default: break
@@ -62,10 +55,8 @@ Usage: fastfood update [options]
       A tag or branch name.
   -f, --force:
       Update to last version.
-  -p, --path:
-      A path to Fastfile. `fastlane/Fastfile` by default.
   --no-cache:
-      Update shared fastlane ignoring cached versions.
+      Update shared fastlane ignoring cached versions. Usually uses for fastlane in development stage.
 """
     }()
 }
