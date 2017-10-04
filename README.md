@@ -34,8 +34,8 @@ Usage: fastfood update [options]
       A tag or branch name.
   -f, --force:
       Update to last version.
-  -p, --path:
-      A path to Fastfile. `fastlane/Fastfile` by default.
+  --no-cache:
+      Update shared fastlane ignoring cached versions. Usually uses for fastlane in development stage.
 ```
 ## Installation
 
