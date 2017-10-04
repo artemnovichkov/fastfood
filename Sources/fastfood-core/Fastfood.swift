@@ -52,8 +52,10 @@ public final class Fastfood {
             }
         }
 
+        let checkCache = !arguments.noCache
         let path = try fastfileService.updateSharedFastlaneIfNeeded(fromRemotePath: url.absoluteString,
-                                                                    version: version)
+                                                                    version: version,
+                                                                    checkCache: checkCache)
         print("🤖 Updating...")
         try fastfileService.updateProjectFastlaneIfNeeded(withPath: path + "fastlane")
         print("🎉 Done!")

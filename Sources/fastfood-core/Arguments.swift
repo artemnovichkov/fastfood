@@ -15,6 +15,7 @@ struct Arguments {
     var path: String?
     var command = Command.help
     var force = false
+    var noCache = false
 
     //swiftlint:disable cyclomatic_complexity
     init?(arguments: [String]) {
@@ -44,6 +45,8 @@ struct Arguments {
                     return nil
                 }
                 path = arguments[pathIndex]
+            case "--no-cache":
+                noCache = true
             default: break
             }
         }

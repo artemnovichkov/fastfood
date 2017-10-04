@@ -53,11 +53,13 @@ public final class FastfileService {
     /// - Parameters:
     ///   - path: A path for remote repository.
     ///   - version: A tag or a branch of remote repository. Default value is nil.
+    ///   - checkCache: Check local saved fastlane.
     /// - Returns: A path to shared Fastlane folder.
     /// - Throws: `FastfileService.Error` errors.
     @discardableResult
     func updateSharedFastlaneIfNeeded(fromRemotePath remotePath: String,
-                                      version: String? = nil) throws -> String {
+                                      version: String? = nil,
+                                      checkCache: Bool) throws -> String {
         let finalVersion: String
         if let version = version {
             finalVersion = version
@@ -72,8 +74,13 @@ public final class FastfileService {
             }
         }
         let fastfileVersionFolderPath = Keys.fastfoodPath + "/" + Keys.fastfile + "-" + finalVersion
-        if let fastlaneFolder = try? Folder(path: fastfileVersionFolderPath) {
-            return fastlaneFolder.path
+        if checkCache {
+            if let fastlaneFolder = try? Folder(path: fastfileVersionFolderPath) {
+                return fastlaneFolder.path
+            }
+        }
+        else {
+            try? Folder(path: fastfileVersionFolderPath).delete()
         }
 
         print("🦄 Clone \(remotePath)...")
@@ -86,7 +93,7 @@ public final class FastfileService {
         else {
             try gitService.checkout(path: fastfileVersionFolderPath, branch: finalVersion)
         }
-        return fastfileVersionFolderPath
+        return fastfileVersionFolderPath + "/"
     }
 
     /// Updates Fastlane in current project directory. Creates a new one if needed.
