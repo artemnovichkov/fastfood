@@ -109,13 +109,13 @@ public final class FastfileService {
                 try subfolder.copy(to: projectFastlaneFolder)
             }
             try sharedFastlaneFolder.makeFileSequence(recursive: false, includeHidden: true).forEach { file in
-                let projectFile = try? projectFastlaneFolder.file(named: file.name)
-                if let projectFile = projectFile {
-                    if ![".env", "Appfile"].contains(projectFile.name) {
-                        try projectFile.delete()
-                    }
+                let isProtected = [".env", "Appfile"].contains(file.name)
+                let localFile = try? projectFastlaneFolder.file(named: file.name)
+                if !isProtected {
+                    try localFile?.delete()
+                    try file.copy(to: projectFastlaneFolder)
                 }
-                else {
+                else if localFile == nil {
                     try file.copy(to: projectFastlaneFolder)
                 }
             }
