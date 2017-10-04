@@ -62,6 +62,11 @@ final class ArgumentsSpec: XCTestCase {
         XCTAssertEqual(arguments?.force, true)
     }
 
+    func testLongCacheOptionParsing() {
+        let arguments = Arguments(arguments: ["--no-cache"])
+        XCTAssertEqual(arguments?.noCache, true)
+    }
+
     // MARK: - Wrong formats
 
     func testWrongURLOption() {

@@ -64,6 +64,8 @@ Usage: fastfood update [options]
       Update to last version.
   -p, --path:
       A path to Fastfile. `fastlane/Fastfile` by default.
+  --no-cache:
+      Update shared fastlane ignoring cached versions.
 """
     }()
 }
