@@ -9,15 +9,12 @@ public final class FastfileService {
 
     enum Error: Swift.Error {
         case noTags
-        case fastfileUpdatingFailed
-        case fastfileReadingFailed(path: String)
-        case fastfoodFolderReadingFailed
+        case fastlaneUpdatingFailed
     }
 
     private enum Keys {
         static let fastfoodPath = "/usr/local/bin/.fastfood"
         static let fastfile = "Fastfile"
-        static let fastfilePath = "fastlane/Fastfile"
     }
 
     private let fileSystem: FileSystem
@@ -51,18 +48,16 @@ public final class FastfileService {
         }
     }
 
-    /// Updates shared Fastfile. It checks local version and clones a new one if needed.
+    /// Updates shared Fastlane. It checks local version and clones a new one if needed.
     ///
     /// - Parameters:
     ///   - path: A path for remote repository.
-    ///   - branch: A tag or a branch of remote repository. Default value is nil.
-    ///   - fastfilePath: a path to Fastfile. Converts to `fastlane/Fastfile` in case of `nil`.
-    /// - Returns: A path to shared Fastfile.
+    ///   - version: A tag or a branch of remote repository. Default value is nil.
+    /// - Returns: A path to shared Fastlane folder.
     /// - Throws: `FastfileService.Error` errors.
     @discardableResult
-    func updateSharedFastfileIfNeeded(fromRemotePath remotePath: String,
-                                      version: String? = nil,
-                                      fastfilePath: String? = nil) throws -> String {
+    func updateSharedFastlaneIfNeeded(fromRemotePath remotePath: String,
+                                      version: String? = nil) throws -> String {
         let finalVersion: String
         if let version = version {
             finalVersion = version
@@ -77,8 +72,8 @@ public final class FastfileService {
             }
         }
         let fastfileVersionFolderPath = Keys.fastfoodPath + "/" + Keys.fastfile + "-" + finalVersion
-        if let fastfile = try? File(path: fastfileVersionFolderPath + "/" + Keys.fastfilePath) {
-            return fastfile.path
+        if let fastlaneFolder = try? Folder(path: fastfileVersionFolderPath) {
+            return fastlaneFolder.path
         }
 
         print("🦄 Clone \(remotePath)...")
@@ -91,50 +86,35 @@ public final class FastfileService {
         else {
             try gitService.checkout(path: fastfileVersionFolderPath, branch: finalVersion)
         }
-        let fastfilePath = fastfileVersionFolderPath + "/" + Keys.fastfilePath
-        do {
-            let fastfile = try File(path: fastfilePath)
-            return fastfile.path
-        }
-        catch {
-            throw Error.fastfileReadingFailed(path: fastfilePath)
-        }
-
+        return fastfileVersionFolderPath
     }
 
-    /// Updates local `Fastfile` in current project directory. Creates a new one if needed.
+    /// Updates Fastlane in current project directory. Creates a new one if needed.
     ///
-    /// - Parameter string: A string for adding.
+    /// - Parameter path: A path to cached fastlane folder.
     /// - Throws: In case of reading or updating errors.
-    func updateProjectFastfileIfNeeded(withString string: String) throws {
+    func updateProjectFastlaneIfNeeded(withPath path: String) throws {
         do {
-            let fastfile = try projectFastfile()
-            let fastfileContent = try fastfile.readAsString()
-            var fastfileStrings = fastfileContent.components(separatedBy: "\n")
-            let index = fastfileStrings.index { $0.contains(Keys.fastfoodPath) }
-            if let index = index {
-                fastfileStrings[index] = string
+            let projectFastlaneFolder = try fileSystem.currentFolder.createSubfolderIfNeeded(withName: "fastlane")
+            let sharedFastlaneFolder = try Folder(path: path)
+            try sharedFastlaneFolder.subfolders.forEach { subfolder in
+                try? projectFastlaneFolder.subfolder(named: subfolder.name).delete()
+                try subfolder.copy(to: projectFastlaneFolder)
             }
-            else {
-                fastfileStrings.insert(string, at: 0)
+            try sharedFastlaneFolder.makeFileSequence(recursive: false, includeHidden: true).forEach { file in
+                let projectFile = try? projectFastlaneFolder.file(named: file.name)
+                if let projectFile = projectFile {
+                    if ![".env", "Appfile"].contains(projectFile.name) {
+                        try projectFile.delete()
+                    }
+                }
+                else {
+                    try file.copy(to: projectFastlaneFolder)
+                }
             }
-            try fastfile.write(string: fastfileStrings.joined(separator: "\n"))
         }
         catch {
-            throw Error.fastfileUpdatingFailed
-        }
-    }
-
-    /// Copies files at paths to fastlane folder.
-    ///
-    /// - Parameter paths: the paths to the files for copying.
-    func copyFilesIfNeeded(atPaths paths: [String]) {
-        guard let fastlaneFolder = try? Folder.current.createSubfolderIfNeeded(withName: "fastlane") else {
-            return
-        }
-        paths.forEach { path in
-            let envFile = try? File(path: path)
-            try? envFile?.copy(to: fastlaneFolder)
+            throw Error.fastlaneUpdatingFailed
         }
     }
 
@@ -158,9 +138,7 @@ extension FastfileService.Error: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noTags: return "Tag can't be founded."
-        case .fastfileUpdatingFailed: return "Fastfile can't be founded or updated."
-        case .fastfileReadingFailed(let path): return "Remote repository doesn't contain Fastfile at path: \(path)."
-        case .fastfoodFolderReadingFailed: return "Can't find fastfood folder."
+        case .fastlaneUpdatingFailed: return "Fastfile can't be founded or updated."
         }
     }
 }
