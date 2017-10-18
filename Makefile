@@ -4,10 +4,10 @@ OS?=sierra
 PREFIX?=/usr/local
 PROJECT?=Fastfood
 RELEASE_BINARY_FOLDER?=$(BUILD_FOLDER)/release/$(PROJECT)
-VERSION?=1.3
+VERSION?=1.3.1
 
 build:
-	swift build -c release -Xswiftc -static-stdlib
+	swift build --disable-sandbox -c release -Xswiftc -static-stdlib
 
 test:
 	swift test
