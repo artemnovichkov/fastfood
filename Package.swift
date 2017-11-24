@@ -8,7 +8,7 @@ let package = Package(
         .library(name: "Fastfood", targets: ["FastfoodCore"])
         ],
     dependencies: [
-        .package(url: "https://github.com/johnsundell/files.git", from: "1.0.0")
+        .package(url: "https://github.com/johnsundell/files.git", from: "2.0.0")
     ],
     targets: [
         .target(
