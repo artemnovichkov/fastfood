@@ -65,7 +65,7 @@ public final class FastfileService {
             finalVersion = version
         }
         else {
-            let tag = try gitService.tags(from: remotePath).map(Tag.init).first
+            let tag = try gitService.tags(from: remotePath).map(Tag.init).last
             if let versionTag = tag {
                 finalVersion = versionTag.version
             }
