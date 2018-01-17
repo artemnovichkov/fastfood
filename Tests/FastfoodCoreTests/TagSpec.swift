@@ -8,10 +8,6 @@ import XCTest
 
 final class TagSpec: XCTestCase {
 
-    override func setUp() {
-
-    }
-
     func testTagInitialization() {
         do {
             let hash = "1c6bd751e1f35688bc1bfcf95dadc8fb81c2daa1"
@@ -26,7 +22,7 @@ final class TagSpec: XCTestCase {
     }
 
     func testTagInitializationThrowing() {
-        XCTAssertThrowsError(try Tag(string: "returns frong error")) { (error) in
+        XCTAssertThrowsError(try Tag(string: "returns wrong error")) { (error) in
             XCTAssertEqual(error as? Tag.Error, Tag.Error.wrongFormat)
         }
     }

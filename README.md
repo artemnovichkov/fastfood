@@ -27,7 +27,13 @@ To use it run `fastfood update` in a project folder. That's all! Fastfood update
 Run `fastfood help` to see available options:
 
 ```bash
-Usage: fastfood update [options]
+Usage: fastfood [options]
+  update:
+      Update fastlane in the project.
+  clean:
+      Clean all cached versions.
+  help:
+      Print this message.
   -u, --url:
       URL to a repo contains Fastfile.
   -v, --version:

@@ -127,6 +127,12 @@ public final class FastfileService {
         }
     }
 
+    /// Clean cached fastfiles.
+    func clean() {
+        try? Folder(path: Keys.fastfoodPath).subfolders.forEach { try? $0.delete() }
+        print("🎉 Done!")
+    }
+
     // MARK: - Private
 
     private func projectFastfile() throws -> File {
