@@ -37,7 +37,7 @@ public final class GitService {
     ///   - localPath: A path to local folder.
     ///   - branch: A branch of remote repository. Default value is nil.
     func clone(fromPath path: String, toLocalPath localPath: String, branch: String? = nil) throws {
-        var arguments = ["git", "clone", path, localPath, "--quiet"]
+        var arguments = ["git", "clone", path, localPath]
         if let branch = branch {
             arguments.append(contentsOf: ["-b", branch])
         }
@@ -50,7 +50,7 @@ public final class GitService {
     ///   - path: A path to remote repository.
     ///   - tag: A tag for checkout.
     func checkout(path: String, tag: String) throws {
-        try process(launchPath: path, arguments: ["git", "checkout", "tags/" + tag, "--quiet"])
+        try process(launchPath: path, arguments: ["git", "checkout", "tags/" + tag])
     }
 
     /// Checkouts for passed branch.
