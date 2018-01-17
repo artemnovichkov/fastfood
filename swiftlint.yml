@@ -1,5 +1,0 @@
-excluded:
-  - .build
-
-statement_position:
-  statement_mode: uncuddled_else
