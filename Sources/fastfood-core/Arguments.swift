@@ -42,7 +42,9 @@ struct Arguments {
             case "--no-cache":
                 noCache = true
             default:
-                unknownOptions.append(argument)
+                if argument.starts(with: "-") {
+                    unknownOptions.append(argument)
+                }
             }
         }
     }
