@@ -8,15 +8,16 @@ import XCTest
 
 final class ArgumentsSpec: XCTestCase {
 
-    override func setUp() {
-
-    }
-
     // MARK: - Commands
 
     func testUpdateCommandParsing() {
         let arguments = Arguments(arguments: ["update"])
         XCTAssertEqual(arguments?.command, Arguments.Command.update)
+    }
+
+    func testCleanCommandParsing() {
+        let arguments = Arguments(arguments: ["clean"])
+        XCTAssertEqual(arguments?.command, Arguments.Command.clean)
     }
 
     func testHelpCommandParsing() {

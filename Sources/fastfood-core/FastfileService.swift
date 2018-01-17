@@ -88,9 +88,11 @@ public final class FastfileService {
 
         let tag = try gitService.tags(from: remotePath).map(Tag.init).first { $0.version == finalVersion }
         if let versionTag = tag {
+            print("👨🏻‍💻 Checkout \(versionTag.version)...")
             try gitService.checkout(path: fastfileVersionFolderPath, tag: versionTag.version)
         }
         else {
+            print("👨🏻‍💻 Checkout \(finalVersion)...")
             try gitService.checkout(path: fastfileVersionFolderPath, branch: finalVersion)
         }
         return fastfileVersionFolderPath + "/"
@@ -123,6 +125,12 @@ public final class FastfileService {
         catch {
             throw Error.fastlaneUpdatingFailed
         }
+    }
+
+    /// Clean cached fastfiles.
+    func clean() {
+        try? Folder(path: Keys.fastfoodPath).subfolders.forEach { try? $0.delete() }
+        print("🎉 Done!")
     }
 
     // MARK: - Private

@@ -7,7 +7,7 @@ import Foundation
 struct Arguments {
 
     enum Command {
-        case update, help
+        case update, clean, help
     }
 
     var url: URL?
@@ -23,6 +23,8 @@ struct Arguments {
             switch argument.lowercased() {
             case "update":
                 command = .update
+            case "clean":
+                command = .clean
             case "help":
                 command = .help
             case "-u", "--url":
@@ -42,7 +44,9 @@ struct Arguments {
             case "--no-cache":
                 noCache = true
             default:
-                unknownOptions.append(argument)
+                if argument.starts(with: "-") {
+                    unknownOptions.append(argument)
+                }
             }
         }
     }
@@ -50,7 +54,13 @@ struct Arguments {
 
     static let description: String = {
         return """
-Usage: fastfood update [options]
+Usage: fastfood [options]
+  update:
+      Update fastlane in the project.
+  clean:
+      Clean all cached versions.
+  help:
+      Print this message.
   -u, --url:
       URL to a repo contains Fastfile.
   -v, --version:

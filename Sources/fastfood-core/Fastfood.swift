@@ -43,6 +43,8 @@ public final class Fastfood {
             print(Arguments.description)
         case .update:
             try update(with: arguments)
+        case .clean:
+            fastfileService.clean()
         }
     }
 
