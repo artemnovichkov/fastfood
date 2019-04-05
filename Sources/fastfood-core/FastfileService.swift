@@ -127,6 +127,33 @@ public final class FastfileService {
         }
     }
 
+    func updateEnvFile(key: String, withValue value: String) throws {
+        let file = try getLocalEnvFile()
+        let fileContent = try file.readAsString()
+        let lines = fileContent.components(separatedBy: "\n")
+        var newContent = ""
+        lines.forEach { line in
+            var tempString = line
+            if tempString.contains(key) {
+                tempString = line.replacingOccurrences(of: "#", with: "")
+            }
+            newContent += tempString.replacingOccurrences(of: key, with: value) + "\n"
+        }
+
+        try file.write(string: newContent)
+
+    }
+
+    private func getLocalEnvFile() throws -> File {
+        let localFastlaneFolder = try fileSystem.currentFolder.subfolder(named: "fastlane")
+        let file = try localFastlaneFolder.file(named: ".env")
+        return file
+    }
+
+    private func uncommentLine(withParameter parameter: String) {
+
+    }
+
     /// Clean cached fastfiles.
     func clean() {
         try? Folder(path: Keys.fastfoodPath).subfolders.forEach { try? $0.delete() }
