@@ -72,6 +72,8 @@ Usage: fastfood [options]
       Update to last version.
   --no-cache:
       Update shared fastlane ignoring cached versions. Usually uses for fastlane in development stage.
+  -mi, --manual-input:
+      Enable manual input for configurating env file.
 """
     }()
 }
