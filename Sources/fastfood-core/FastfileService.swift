@@ -151,16 +151,6 @@ public final class FastfileService {
         try file.write(string: newContent)
     }
 
-    private func getLocalEnvFile() throws -> File {
-        let localFastlaneFolder = try fileSystem.currentFolder.subfolder(named: "fastlane")
-        let file = try localFastlaneFolder.file(named: ".env")
-        return file
-    }
-
-    private func uncommentLine(withParameter parameter: String) {
-
-    }
-
     /// Clean cached fastfiles.
     func clean() {
         try? Folder(path: Keys.fastfoodPath).subfolders.forEach { try? $0.delete() }
@@ -172,6 +162,12 @@ public final class FastfileService {
     private func projectFastfile() throws -> File {
         let fastlaneFolder = try fileSystem.currentFolder.createSubfolderIfNeeded(withName: "fastlane")
         return try fastlaneFolder.createFileIfNeeded(withName: Keys.fastfile)
+    }
+
+    private func getLocalEnvFile() throws -> File {
+        let localFastlaneFolder = try fileSystem.currentFolder.subfolder(named: "fastlane")
+        let file = try localFastlaneFolder.file(named: ".env")
+        return file
     }
 }
 
