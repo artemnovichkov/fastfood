@@ -21,7 +21,7 @@ public final class Fastfood {
     private let fastfileService: FastfileService
     private let consoleIO: ConsoleIO = ConsoleIO()
 
-    public init(arguments: [String] = ["update", "-mi"],//Array(CommandLine.arguments.dropFirst()),
+    public init(arguments: [String] = Array(CommandLine.arguments.dropFirst()),
                 fastfileService: FastfileService = .init()) {
         self.arguments = arguments
         self.fastfileService = fastfileService
@@ -81,12 +81,13 @@ public final class Fastfood {
     }
 
     private func startManualInputPhase() throws {
-        try Keys.enviramentTags.forEach { key, value in
+        var valuesToUpdate = [String: String]()
+        Keys.enviramentTags.forEach { key, value in
             print("Enter your \(value)")
             let textFromConsole = consoleIO.getInput()
-            try fastfileService.updateEnvFile(key: key, withValue: textFromConsole)
-            print("\(value) updated with \(textFromConsole)")
+            valuesToUpdate[key] = textFromConsole
         }
+        try fastfileService.updateEnvFile(values: valuesToUpdate)
     }
 }
 

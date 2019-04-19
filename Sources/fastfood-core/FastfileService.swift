@@ -127,21 +127,28 @@ public final class FastfileService {
         }
     }
 
-    func updateEnvFile(key: String, withValue value: String) throws {
+    /// Update .env by input values and uncomment that lines if needed.
+    ///
+    /// - Parameter values: Values to update in .env file
+    /// - Throws: In case of reading or updating errors.
+    func updateEnvFile(values: [String: String]) throws {
         let file = try getLocalEnvFile()
         let fileContent = try file.readAsString()
         let lines = fileContent.components(separatedBy: "\n")
         var newContent = ""
         lines.forEach { line in
             var tempString = line
-            if tempString.contains(key) {
-                tempString = line.replacingOccurrences(of: "#", with: "")
+
+            for (key, value) in values {
+                if tempString.contains(key) {
+                    tempString = line.replacingOccurrences(of: "#", with: "")
+                    tempString = tempString.replacingOccurrences(of: key, with: value) + "\n"
+                    break
+                }
             }
-            newContent += tempString.replacingOccurrences(of: key, with: value) + "\n"
+            newContent += tempString + "\n"
         }
-
         try file.write(string: newContent)
-
     }
 
     private func getLocalEnvFile() throws -> File {
