@@ -1,19 +1,17 @@
 //
-//  ConsoleIO.swift
-//  Fastfood
+//  Copyright © 2019 Rosberry. All rights reserved.
 //
-//  Created by Stas on 05/04/2019.
-//
+
 import Foundation
 
-class ConsoleIO {
+final class ConsoleIO {
 
-    func getInput() -> String {
+    func getInput() -> String? {
         let keyboard = FileHandle.standardInput
         let inputData = keyboard.availableData
-        let strData = String(data: inputData, encoding: String.Encoding.utf8)!
+        let strData = String(data: inputData, encoding: .utf8)
 
-        return strData.trimmingCharacters(in: CharacterSet.newlines)
+        return strData?.trimmingCharacters(in: .newlines)
     }
 
 }

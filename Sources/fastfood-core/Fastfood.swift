@@ -9,7 +9,7 @@ public final class Fastfood {
 
     private enum Keys {
         static let url = "https://github.com/rosberry/RSBFastlane"
-        static let enviramentTags: [String: String] = ["bundle_name": "bundle name",
+        static let environmentTags: [String: String] = ["bundle_name": "bundle name",
                                                        "project_name": "project name"]
     }
 
@@ -19,7 +19,7 @@ public final class Fastfood {
 
     private var arguments: [String]
     private let fastfileService: FastfileService
-    private let consoleIO: ConsoleIO = ConsoleIO()
+    private let consoleIO: ConsoleIO = .init()
 
     public init(arguments: [String] = Array(CommandLine.arguments.dropFirst()),
                 fastfileService: FastfileService = .init()) {
@@ -50,6 +50,8 @@ public final class Fastfood {
             fastfileService.clean()
         }
     }
+
+    // MARK: - Private
 
     private func update(with arguments: Arguments) throws {
         let argumentURL = arguments.url ?? URL(string: Keys.url)
@@ -82,9 +84,11 @@ public final class Fastfood {
 
     private func startManualInputPhase() throws {
         var valuesToUpdate = [String: String]()
-        Keys.enviramentTags.forEach { key, value in
+        Keys.environmentTags.forEach { key, value in
             print("Enter your \(value)")
-            let textFromConsole = consoleIO.getInput()
+            guard let textFromConsole = consoleIO.getInput() else {
+                return
+            }
             valuesToUpdate[key] = textFromConsole
         }
         try fastfileService.updateEnvFile(values: valuesToUpdate)

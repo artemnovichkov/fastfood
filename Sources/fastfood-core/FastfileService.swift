@@ -139,12 +139,9 @@ public final class FastfileService {
         lines.forEach { line in
             var tempString = line
 
-            for (key, value) in values {
-                if tempString.contains(key) {
-                    tempString = line.replacingOccurrences(of: "#", with: "")
-                    tempString = tempString.replacingOccurrences(of: key, with: value) + "\n"
-                    break
-                }
+            for (key, value) in values where tempString.contains(key) {
+                tempString = line.replacingOccurrences(of: "#", with: "")
+                tempString = tempString.replacingOccurrences(of: key, with: value) + "\n"
             }
             newContent += tempString + "\n"
         }
