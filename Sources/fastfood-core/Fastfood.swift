@@ -9,6 +9,8 @@ public final class Fastfood {
 
     private enum Keys {
         static let url = "https://github.com/rosberry/RSBFastlane"
+        static let environmentTags: [String: String] = ["bundle_name": "bundle name",
+                                                       "project_name": "project name"]
     }
 
     enum Error: Swift.Error {
@@ -17,6 +19,7 @@ public final class Fastfood {
 
     private var arguments: [String]
     private let fastfileService: FastfileService
+    private let consoleIO: ConsoleIO = .init()
 
     public init(arguments: [String] = Array(CommandLine.arguments.dropFirst()),
                 fastfileService: FastfileService = .init()) {
@@ -48,6 +51,8 @@ public final class Fastfood {
         }
     }
 
+    // MARK: - Private
+
     private func update(with arguments: Arguments) throws {
         let argumentURL = arguments.url ?? URL(string: Keys.url)
         guard let url = argumentURL else {
@@ -71,7 +76,22 @@ public final class Fastfood {
                                                                     checkCache: checkCache)
         print("🤖 Updating...")
         try fastfileService.updateProjectFastlaneIfNeeded(withPath: path + "fastlane")
+        if arguments.manualInput {
+            try startManualInputPhase()
+        }
         print("🎉 Done!")
+    }
+
+    private func startManualInputPhase() throws {
+        var valuesToUpdate = [String: String]()
+        Keys.environmentTags.forEach { key, value in
+            print("Enter your \(value)")
+            guard let textFromConsole = consoleIO.getInput() else {
+                return
+            }
+            valuesToUpdate[key] = textFromConsole
+        }
+        try fastfileService.updateEnvFile(values: valuesToUpdate)
     }
 }
 

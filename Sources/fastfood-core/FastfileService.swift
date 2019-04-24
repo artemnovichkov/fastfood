@@ -127,6 +127,27 @@ public final class FastfileService {
         }
     }
 
+    /// Update .env by input values and uncomment that lines if needed.
+    ///
+    /// - Parameter values: Values to update in .env file
+    /// - Throws: In case of reading or updating errors.
+    func updateEnvFile(values: [String: String]) throws {
+        let file = try getLocalEnvFile()
+        let fileContent = try file.readAsString()
+        let lines = fileContent.components(separatedBy: "\n")
+        var newContent = ""
+        lines.forEach { line in
+            var tempString = line
+
+            for (key, value) in values where tempString.contains(key) {
+                tempString = line.replacingOccurrences(of: "#", with: "")
+                tempString = tempString.replacingOccurrences(of: key, with: value) + "\n"
+            }
+            newContent += tempString + "\n"
+        }
+        try file.write(string: newContent)
+    }
+
     /// Clean cached fastfiles.
     func clean() {
         try? Folder(path: Keys.fastfoodPath).subfolders.forEach { try? $0.delete() }
@@ -138,6 +159,12 @@ public final class FastfileService {
     private func projectFastfile() throws -> File {
         let fastlaneFolder = try fileSystem.currentFolder.createSubfolderIfNeeded(withName: "fastlane")
         return try fastlaneFolder.createFileIfNeeded(withName: Keys.fastfile)
+    }
+
+    private func getLocalEnvFile() throws -> File {
+        let localFastlaneFolder = try fileSystem.currentFolder.subfolder(named: "fastlane")
+        let file = try localFastlaneFolder.file(named: ".env")
+        return file
     }
 }
 

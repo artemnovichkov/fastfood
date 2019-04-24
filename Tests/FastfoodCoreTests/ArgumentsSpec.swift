@@ -44,6 +44,11 @@ final class ArgumentsSpec: XCTestCase {
         XCTAssertEqual(arguments?.force, true)
     }
 
+    func testShortManualInputOptionParsing() {
+        let arguments = Arguments(arguments: ["-mi"])
+        XCTAssertEqual(arguments?.manualInput, true)
+    }
+
     // MARK: - Long options
 
     func testLongURLOptionParsing() {
@@ -66,6 +71,11 @@ final class ArgumentsSpec: XCTestCase {
     func testLongCacheOptionParsing() {
         let arguments = Arguments(arguments: ["--no-cache"])
         XCTAssertEqual(arguments?.noCache, true)
+    }
+
+    func testLongManualInputOptionParsing() {
+        let arguments = Arguments(arguments: ["--manual-input"])
+        XCTAssertEqual(arguments?.manualInput, true)
     }
 
     // MARK: - Wrong formats

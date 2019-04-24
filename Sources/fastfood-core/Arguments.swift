@@ -15,6 +15,7 @@ struct Arguments {
     var command = Command.help
     var force = false
     var noCache = false
+    var manualInput = false
     var unknownOptions: [String] = []
 
     //swiftlint:disable cyclomatic_complexity
@@ -43,6 +44,8 @@ struct Arguments {
                 force = true
             case "--no-cache":
                 noCache = true
+            case "-mi", "--manual-input":
+                manualInput = true
             default:
                 if argument.starts(with: "-") {
                     unknownOptions.append(argument)
@@ -69,6 +72,8 @@ Usage: fastfood [options]
       Update to last version.
   --no-cache:
       Update shared fastlane ignoring cached versions. Usually uses for fastlane in development stage.
+  -mi, --manual-input:
+      Enable manual input for configurating env file.
 """
     }()
 }
