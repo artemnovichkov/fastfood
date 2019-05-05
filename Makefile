@@ -1,38 +1,46 @@
-BINARY?=fastfood
-BUILD_FOLDER?=.build
-OS?=sierra
-PREFIX?=/usr/local
-PROJECT?=Fastfood
-RELEASE_BINARY_FOLDER?=$(BUILD_FOLDER)/release/$(PROJECT)
-VERSION?=1.4.1
+SHELL = /bin/bash
 
+REPODIR = $(shell pwd)
+BUILDDIR = $(REPODIR)/.build
+RELEASEBUILDDIR = $(BUILDDIR)/release
+TEMPPRODUCTDIR = $(BUILDDIR)/_PRODUCT
+PRODUCTDIR = $(RELEASEBUILDDIR)/_PRODUCT
+
+.DEFAULT_GOAL = all
+
+.PHONY: all
+all: build
+
+.PHONY: build
 build:
-	swift build --disable-sandbox -c release
+	@swift build \
+		-c release \
+		--disable-sandbox \
+		--build-path "$(BUILDDIR)"
+	@rm -rf "$(PRODUCTDIR)"
+	@rm -rf "$(TEMPPRODUCTDIR)"
+	@mkdir -p "$(TEMPPRODUCTDIR)"
+	@mkdir -p "$(TEMPPRODUCTDIR)/include/fastfood"
+	@cp -a "$(RELEASEBUILDDIR)/." "$(TEMPPRODUCTDIR)/include/fastfood"
+	@cp -a "$(TEMPPRODUCTDIR)/." "$(PRODUCTDIR)"
+	@rm -rf "$(TEMPPRODUCTDIR)"
+	@mkdir -p "$(PRODUCTDIR)/bin"
+	@rm -rf $(PRODUCTDIR)/include/fastfood/*.build
+	@rm -rf $(PRODUCTDIR)/include/fastfood/*.product
+	@rm -rf $(PRODUCTDIR)/include/fastfood/ModuleCache
+	@rm -f "$(PRODUCTDIR)/include/fastfood/fastfood.swiftdoc"
+	@rm -f "$(PRODUCTDIR)/include/fastfood/fastfood.swiftmodule"
+	@mv "$(PRODUCTDIR)/include/fastfood/fastfood" "$(PRODUCTDIR)/bin"
+	@rm -f "$(RELEASEBUILDDIR)/fastfood"
+	@ln -s "$(PRODUCTDIR)/bin/fastfood" "$(RELEASEBUILDDIR)/fastfood"
+	@cp "$(REPODIR)/LICENSE" "$(PRODUCTDIR)/LICENSE"
 
-test:
-	swift test
+.PHONY: package
+package:
+	rm -f "$(PRODUCTDIR)/fastfood.zip"
+	cd $(PRODUCTDIR) && zip -r ./fastfood.zip ./
+	echo "ZIP created at: $(PRODUCTDIR)/fastfood.zip"
 
+.PHONY: clean
 clean:
-	swift package clean
-	rm -rf $(BUILD_FOLDER) $(PROJECT).xcodeproj
-
-xcode:
-	swift package generate-xcodeproj
-
-install: build
-	mkdir -p $(PREFIX)/bin
-	cp -f $(RELEASE_BINARY_FOLDER) $(PREFIX)/bin/$(BINARY)
-
-bottle: clean build
-	mkdir -p $(BINARY)/$(VERSION)/bin
-	cp README.md $(BINARY)/$(VERSION)/README.md
-	cp LICENSE $(BINARY)/$(VERSION)/LICENSE
-	cp -f $(RELEASE_BINARY_FOLDER) $(BINARY)/$(VERSION)/bin/$(BINARY)
-	tar cfvz $(BINARY)-$(VERSION).$(OS).bottle.tar.gz --exclude='*/.*' $(BINARY)
-	shasum -a 256 $(BINARY)-$(VERSION).$(OS).bottle.tar.gz
-	rm -rf $(BINARY)
-
-sha256:
-	wget https://github.com/artemnovichkov/$(PROJECT)/archive/$(VERSION).tar.gz -O $(PROJECT)-$(VERSION).tar.gz
-	shasum -a 256 $(PROJECT)-$(VERSION).tar.gz
-	rm $(PROJECT)-$(VERSION).tar.gz
+	@rm -rf "$(BUILDDIR)"
